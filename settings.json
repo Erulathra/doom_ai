@@ -1,0 +1,6 @@
+{
+  "scenario": "basic.cfg",
+  "isVizdoomScenario": true,
+  "epochs" : 10,
+  "stepsPerEpoch" : 1500
+}
