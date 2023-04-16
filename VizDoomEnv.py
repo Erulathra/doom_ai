@@ -17,8 +17,8 @@ config_path = os.path.join(vzd.scenarios_path, "basic.cfg")
 number_of_available_actions = 3
 is_window_visible = False
 
-frame_skip = 5
-resolution = (36, 36)
+frame_skip = 10
+resolution = (160, 120)
 
 
 class VizDoomEnv(Env):
@@ -51,11 +51,13 @@ class VizDoomEnv(Env):
         if doom_state:
             img = doom_state.screen_buffer
             img = self.grey_scale(img)
-            info = {"ammo": doom_state.game_variables[0]}
+            ammo = doom_state.game_variables[0]
 
         else:
             img = np.zeros(self.observation_space.shape)
-            info = 0
+            ammo = 0
+
+        info = {"ammo": ammo}
 
         terminated = self.game.is_episode_finished()
 

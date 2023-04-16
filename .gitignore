@@ -5,3 +5,6 @@
 /.idea/
 
 /_vizdoom.ini
+/logs
+/model
+/__pycache__
