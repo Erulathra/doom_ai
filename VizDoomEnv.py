@@ -15,36 +15,38 @@ from rich import print
 
 config_path = os.path.join(vzd.scenarios_path, "basic.cfg")
 number_of_available_actions = 3
-is_window_visible = False
 
 frame_skip = 10
 resolution = (160, 120)
 
 
 class VizDoomEnv(Env):
-    def __init__(self):
+    def __init__(self, is_window_visible=False):
         super().__init__()
+
+        self._is_window_visible = is_window_visible
 
         self.game = vzd.DoomGame()
         self._setup_game()
         self._setup_environment()
+        self.frame_skip = frame_skip
 
     def _setup_game(self):
         self.game.load_config(config_path)
-        self.game.set_window_visible(is_window_visible)
+        self.game.set_window_visible(self._is_window_visible)
         self.game.init()
 
     def _setup_environment(self):
         self.observation_space = Box(low=0,
                                      high=255,
-                                     shape=(resolution[1], resolution[0], 1),
+                                     shape=(resolution[1], resolution[0], 3),
                                      dtype=np.uint8)
 
         self.action_space = Discrete(number_of_available_actions)
 
     def step(self, action: ActType):
         available_actions = np.identity(number_of_available_actions, dtype=np.uint8)
-        reward = self.game.make_action(available_actions[action], frame_skip)
+        reward = self.game.make_action(available_actions[action], self.frame_skip)
 
         # Get State data
         doom_state: GameState = self.game.get_state()
@@ -76,9 +78,9 @@ class VizDoomEnv(Env):
         return img, info
 
     def grey_scale(self, observation):
-        grey = cv2.cvtColor(np.moveaxis(observation, 0, -1), cv2.COLOR_BGR2GRAY)
-        resize = cv2.resize(grey, resolution, interpolation=cv2.INTER_CUBIC)
-        return np.reshape(resize, (resolution[1], resolution[0], 1))
+        # grey = cv2.cvtColor(np.moveaxis(observation, 0, -1), cv2.COLOR_BGR2GRAY)
+        resize = cv2.resize(np.moveaxis(observation, 0, -1), resolution, interpolation=cv2.INTER_CUBIC)
+        return np.reshape(resize, (resolution[1], resolution[0], 3))
 
     def close(self):
         self.game.close()
