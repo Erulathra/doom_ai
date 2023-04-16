@@ -18,7 +18,7 @@ number_of_available_actions = 3
 is_window_visible = False
 
 frame_skip = 5
-resolution = (24, 32)
+resolution = (36, 36)
 
 
 class VizDoomEnv(Env):
@@ -51,20 +51,27 @@ class VizDoomEnv(Env):
         if doom_state:
             img = doom_state.screen_buffer
             img = self.grey_scale(img)
-            info = doom_state.game_variables
+            info = {"ammo": doom_state.game_variables[0]}
+
         else:
             img = np.zeros(self.observation_space.shape)
             info = 0
 
-        done = self.game.is_episode_finished()
+        terminated = self.game.is_episode_finished()
 
-        return img, reward, done, info
+        # todo: implemement truncated
+        return img, reward, terminated, False, info
 
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
         self.game.new_episode()
-        img = self.game.get_state().screen_buffer
+
+        doom_state: GameState = self.game.get_state()
+
+        img = doom_state.screen_buffer
         img = self.grey_scale(img)
-        return img
+        info = {"ammo": doom_state.game_variables[0]}
+
+        return img, info
 
     def grey_scale(self, observation):
         grey = cv2.cvtColor(np.moveaxis(observation, 0, -1), cv2.COLOR_BGR2GRAY)
