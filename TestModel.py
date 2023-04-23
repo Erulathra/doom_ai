@@ -1,19 +1,18 @@
 import time
 
-import numpy as np
-
 from VizDoomEnv import VizDoomEnv
 from rich import print
 from rich.progress import track
 
 from stable_baselines3 import PPO
 
-MODEL_DIR = 'model/basic/best_model_100000.zip'
+from TrainModel import scenario
 
+MODEL_DIR = 'model/basic/best_model_100000.zip'
 
 def main():
     model = PPO.load(MODEL_DIR)
-    env = VizDoomEnv(True)
+    env = VizDoomEnv(scenario, is_window_visible=True)
     env.frame_skip = 1
 
     for episode in track(range(10)):

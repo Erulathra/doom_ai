@@ -54,15 +54,23 @@ and go to http://localhost:6006/
 
 ## Learning Parameters
 
-* **learning_rate** - parameter set by scientist
+* **total_timesteps** - how long should model be trained
+* **learning_rate** - how fast agent should learn, should be lowed for more complex environments
 * **clip_range** - range of clip, set by scientist, how much PPO clips the learning value
 * **gae_lambda** - ???
-* **n_steps** - ???
+* **n_steps** - ??? should be higher for more complex environments
 
 ## Tips
 
 * If approx_kl is too chaotic, you can increase clip_range and gae_lambda
 * policy_gradient_loss is fluctuating in start, but with time it is going down
+
+## Observations
+
+* Learning with RGB color buffer is much faster than grayscale.
+* It is better to have low resolution of game for faster processing, 
+but from my observations 160x120 it is the lowest where AI can learn.
+* Frameskip should be lower than 15 but higher than 4 for faster learning
 
 # Licence
 
