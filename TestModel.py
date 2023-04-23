@@ -1,3 +1,4 @@
+import os.path
 import time
 
 from VizDoomEnv import VizDoomEnv
@@ -7,8 +8,9 @@ from rich.progress import track
 from stable_baselines3 import PPO
 
 from TrainModel import scenario
+from TrainModel import total_timesteps
 
-MODEL_DIR = 'model/basic/best_model_100000.zip'
+MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
 
 def main():
     model = PPO.load(MODEL_DIR)

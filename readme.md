@@ -35,7 +35,7 @@ and go to http://localhost:6006/
 
 
 * **approx_kl** - difference between old and new agent. If its spikes massively,
-  learning is unstable. It should be varying but not too big
+  learning is unstable. It should be varying but not too much
 * **clip** - if change between agents is big, PPO clips that change
     * **clip_fraction** - how many times PPO needs to clip value / all learning steps,
       for example, 0.21 means that PPO needs to clip learning in 21% of all steps
