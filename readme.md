@@ -27,8 +27,8 @@ and go to http://localhost:6006/
 
 ## Learning Output
 
-* **ep_len_mean** - average of agent lifetime
-* **ep_len_mean** - average of sum of rewards
+* **ep_len_mean** - averaged agent lifetime
+* **ep_len_mean** - averaged sum of rewards
 
 
 * **fps** - how fast game is running
@@ -38,7 +38,7 @@ and go to http://localhost:6006/
   learning is unstable. It should be varying but not too big
 * **clip** - if change between agents is big, PPO clips that change
     * **clip_fraction** - how many times PPO needs to clip value / all learning steps,
-      for example 0.21 means that PPO needs to clip learning in 21% of all steps
+      for example, 0.21 means that PPO needs to clip learning in 21% of all steps
     * **clip_range** - range of clip, set by scientist, how much PPO clips the learning value
 * **entropy_lose** - how actor actions become less random (it should go towards 0)
 * **explained_variance** - how well critic network can explain variance. (It should go upward)
@@ -48,8 +48,8 @@ and go to http://localhost:6006/
 * **loss** - current loss of reward
 * **n_updates** - number of updates to networks so far
 * **policy_gradient_loss** - (SUPER IMPORTANT) how well is agent is able to take actions to
-  get high reward (It should decrease ( because it means that reward loss is decreasing))
-* **value_loss** - how well is agent able to predict future based of its actions
+  get high reward (It should decrease (because it means that reward loss is decreasing))
+* **value_loss** - how well is agent is able to predict the future based on its actions
   (It should decrease)
 
 ## Learning Parameters
@@ -62,7 +62,7 @@ and go to http://localhost:6006/
 ## Tips
 
 * If approx_kl is too chaotic, you can increase clip_range and gae_lambda
-* policy_gradient_loss is fluctuating in start but with time its going down
+* policy_gradient_loss is fluctuating in start, but with time it is going down
 
 # Licence
 
