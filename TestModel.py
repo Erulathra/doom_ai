@@ -12,6 +12,7 @@ from TrainModel import total_timesteps
 
 MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
 
+
 def main():
     model = PPO.load(MODEL_DIR)
     env = VizDoomEnv(scenario, is_window_visible=True)
@@ -25,7 +26,7 @@ def main():
         while not terminated:
             action, _ = model.predict(obs)
             obs, reward, terminated, _, info = env.step(action)
-            time.sleep(1./30.)
+            time.sleep(1. / 30.)
             total_reward += reward
 
         print(f"{episode}. Total Reward: {total_reward}")
