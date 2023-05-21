@@ -14,7 +14,7 @@ from gymnasium.spaces import Box, Discrete
 wad_path = 'Test/DOOM2.WAD'
 
 class VizDoomEnv(Env):
-    def __init__(self, scenario: str, frame_skip=10, resolution=(160, 120), is_window_visible=False):
+    def __init__(self, scenario: str, frame_skip=10, resolution=(160, 120), is_window_visible=False, is_converting_to_gray = False, doom_skill = -1):
         super().__init__()
 
         self.scenario_path = os.path.join(os.path.curdir, "scenarios", scenario + ".cfg")
@@ -22,8 +22,12 @@ class VizDoomEnv(Env):
         self.frame_skip = frame_skip
 
         self._is_window_visible = is_window_visible
+        self._is_converting_to_gray = is_converting_to_gray
 
         self.game = vzd.DoomGame()
+
+        if doom_skill >= 0:
+            self.game.set_doom_skill(doom_skill)
 
         if os.path.exists(wad_path):
             self.game.set_doom_game_path(wad_path)
@@ -40,11 +44,12 @@ class VizDoomEnv(Env):
         self.game.init()
 
     def _setup_environment(self):
-        self.observation_space = Box(low=0,
-                                     high=255,
-                                     shape=(self.resolution[1], self.resolution[0], 3),
-                                     dtype=np.uint8)
+        if self._is_converting_to_gray:
+            shape = (self.resolution[1], self.resolution[0], 1)
+        else:
+            shape = (self.resolution[1], self.resolution[0], 3)
 
+        self.observation_space = Box(low=0, high=255, shape=shape, dtype=np.uint8)
         self.action_space = Discrete(self.number_of_actions)
 
     def step(self, action: ActType):
@@ -52,37 +57,36 @@ class VizDoomEnv(Env):
         reward = self.game.make_action(available_actions[action], self.frame_skip)
 
         # Get State data
-        doom_state: GameState = self.game.get_state()
-        if doom_state:
-            img = doom_state.screen_buffer
-            img = self.prepare_color_buffer(img)
-            ammo = doom_state.game_variables[0]
-
+        if self.game.get_state():
+            doom_state: GameState = self.game.get_state()
+            screen_buffer = doom_state.screen_buffer
+            screen_buffer = self.prepare_color_buffer(screen_buffer)
         else:
-            img = np.zeros(self.observation_space.shape)
-            ammo = 0
-
-        info = {"ammo": ammo}
+            screen_buffer = np.zeros(self.observation_space.shape)
 
         terminated = self.game.is_episode_finished()
+        truncated = False
 
-        return img, reward, terminated, False, info
+        return screen_buffer, reward, terminated, truncated, {}
 
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
         self.game.new_episode()
 
         doom_state: GameState = self.game.get_state()
 
-        img = doom_state.screen_buffer
-        img = self.prepare_color_buffer(img)
-        info = {"ammo": doom_state.game_variables[0]}
+        screen_buffer = doom_state.screen_buffer
+        screen_buffer = self.prepare_color_buffer(screen_buffer)
 
-        return img, info
+        return screen_buffer, {}
 
     def prepare_color_buffer(self, observation):
-        # grey = cv2.cvtColor(np.moveaxis(observation, 0, -1), cv2.COLOR_BGR2GRAY)
-        resize = cv2.resize(np.moveaxis(observation, 0, -1), self.resolution, interpolation=cv2.INTER_CUBIC)
-        return np.reshape(resize, (self.resolution[1], self.resolution[0], 3))
+        if self._is_converting_to_gray:
+            image = cv2.cvtColor(np.moveaxis(observation, 0, -1), cv2.COLOR_BGR2GRAY)
+            resize = cv2.resize(np.moveaxis(image, 0, -1), self.resolution, interpolation=cv2.INTER_CUBIC)
+            return np.reshape(resize, (self.resolution[1], self.resolution[0], 1))
+        else:
+            resize = cv2.resize(np.moveaxis(observation, 0, -1), self.resolution, interpolation=cv2.INTER_CUBIC)
+            return np.reshape(resize, (self.resolution[1], self.resolution[0], 3))
 
     def close(self):
         self.game.close()

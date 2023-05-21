@@ -3,8 +3,11 @@
 /_vizdoom/
 
 /.idea/
+/.vscode/
 
 /_vizdoom.ini
 /logs
 /model
 /__pycache__
+
+*.bak
