@@ -11,13 +11,21 @@ from TrainModel import scenario
 from TrainModel import total_timesteps
 from TrainModel import is_gray_observation
 
+from RewardShaping import RewardShaping
+
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(100000) + '.zip')
+MODEL_DIR = os.path.join("model", scenario, "best_model_" + str(1000000) + ".zip")
 
 
 def main():
     model = PPO.load(MODEL_DIR)
-    env = VizDoomEnv(scenario, is_window_visible=True, is_converting_to_gray=is_gray_observation, doom_skill=3)
+    env = VizDoomEnv(
+        scenario,
+        is_window_visible=True,
+        is_converting_to_gray=is_gray_observation,
+        doom_skill=3,
+        reward_shaping=RewardShaping(),
+    )
     env.frame_skip = 1
 
     for episode in track(range(10)):
@@ -28,10 +36,10 @@ def main():
         while not terminated:
             action, _ = model.predict(obs)
             obs, reward, terminated, _, info = env.step(action)
-            time.sleep(1. / 30.)
+            time.sleep(1.0 / 30.0)
             total_reward += reward
 
-        print(f"{episode}. Total Reward: {total_reward}")
+            print(f"{episode}. Total Reward: {total_reward}")
 
     env.close()
 
