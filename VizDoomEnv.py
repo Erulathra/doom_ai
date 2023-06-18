@@ -88,6 +88,7 @@ class VizDoomEnv(Env):
 
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
         self.game.new_episode()
+        self.reward_shaping.new_episode()
 
         doom_state: GameState = self.game.get_state()
 

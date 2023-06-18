@@ -11,10 +11,10 @@ from RewardShaping import RewardShaping
 
 scenario = "deathmatch"
 
-learning_rate = 1e-4
-steps = 8 * 1024
+learning_rate = 7e-4
+steps = 1024
 batch_size = 64
-total_timesteps = 1000000
+total_timesteps = 10000000
 clip_range = 0.15
 gae_lambda = 0.90
 
@@ -31,7 +31,7 @@ def main():
         scenario,
         frame_skip=frame_skip,
         is_converting_to_gray=is_gray_observation,
-        doom_skill=5,
+        doom_skill=3,
         reward_shaping=RewardShaping(),
     )
     check_env(env)
