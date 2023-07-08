@@ -14,9 +14,7 @@ from TrainModel import is_gray_observation
 from RewardShaping import RewardShaping
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/deathmatch/best_model_1410000.zip"
-
-
+MODEL_DIR = "model/deathmatch/bc_best_model_1200000.zip"
 
 def main():
     model = PPO.load(MODEL_DIR)

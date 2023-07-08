@@ -49,6 +49,8 @@ class VizDoomEnv(Env):
         self.frame_skip = frame_skip
         self.reward_shaping = reward_shaping
 
+        self.is_first_step = True
+
     def _setup_game(self):
         self.game.load_config(self.scenario_path)
         self.number_of_actions = self.game.get_available_buttons_size()
@@ -76,7 +78,12 @@ class VizDoomEnv(Env):
             screen_buffer = self.prepare_color_buffer(screen_buffer)
 
             if self.reward_shaping is not None:
+                if self.is_first_step:
+                    self.reward_shaping.first_step(doom_state)
+
                 reward = self.reward_shaping.get_reward(reward, doom_state)
+
+            self.is_first_step = False
 
         else:
             screen_buffer = np.zeros(self.observation_space.shape)
@@ -88,12 +95,16 @@ class VizDoomEnv(Env):
 
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
         self.game.new_episode()
-        self.reward_shaping.new_episode()
+        
+        if self.reward_range is not None:
+            self.reward_shaping.new_episode(self.game.get_state())
 
         doom_state: GameState = self.game.get_state()
 
         screen_buffer = doom_state.screen_buffer
         screen_buffer = self.prepare_color_buffer(screen_buffer)
+
+        self.is_first_step = True
 
         return screen_buffer, {}
 
