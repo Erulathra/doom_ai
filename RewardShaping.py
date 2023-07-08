@@ -24,7 +24,7 @@ class RewardShaping:
         self._whole_distance = 0
         self._last_distance = 0
 
-        self._last_ammo = 6
+        self._last_ammo = 8
 
         self._last_kill_count = 0
 
@@ -45,6 +45,7 @@ class RewardShaping:
             episodic_mean_occurrence = self._compute_episodic_mean_occurrence(
                 event_type
             )
+
             episodic_mean_occurrence = max(episodic_mean_occurrence, 0.01)
 
             reward += 1 / episodic_mean_occurrence
@@ -115,7 +116,7 @@ class RewardShaping:
 
         if delta_damage > 0:
             return 1
-        
+
         return 0
 
     def _compute_health_event(self, health):
@@ -132,6 +133,7 @@ class RewardShaping:
 
         if delta_ammo > 0:
             return 1
+
         return 0
 
     def _compute_shoot_event(self, ammo) -> float:
@@ -165,12 +167,11 @@ class RewardShaping:
         self._whole_distance = 0
         self._last_distance = 0
 
-        self._last_ammo = 6
+        self._last_ammo = 8
 
         self._last_kill_count = 0
 
         self._last_damage_count = 0
-
 
     def _add_event(self, event):
         self._events_buffer.append(event)

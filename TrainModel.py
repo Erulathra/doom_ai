@@ -50,7 +50,7 @@ def main():
         batch_size=batch_size,
     )
 
-    # model = PPO.load("model/deadly_corridor/best_model_300000L4.zip")
+    # model = PPO.load("model/deathmatch/bc_best_model_1200000.zip")
     model.set_env(env)
 
     model.learn(total_timesteps=total_timesteps, callback=callback)

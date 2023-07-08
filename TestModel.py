@@ -14,7 +14,8 @@ from TrainModel import is_gray_observation
 from RewardShaping import RewardShaping
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/deathmatch/best_model_2000000.zip"
+MODEL_DIR = "model/deathmatch/best_model_1410000.zip"
+
 
 
 def main():
@@ -40,7 +41,7 @@ def main():
         while not terminated:
             action, _ = model.predict(obs)
             obs, reward, terminated, _, info = env.step(action)
-            time.sleep(1.0 / 30.0)
+            time.sleep(1.0 / 120.0)
             total_reward += reward
 
             # reward_shaping.get_statistics()
