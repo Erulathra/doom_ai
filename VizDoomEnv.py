@@ -80,6 +80,8 @@ class VizDoomEnv(Env):
             if self.reward_shaping is not None:
                 if self.is_first_step:
                     self.reward_shaping.first_step(doom_state)
+                else:
+                    self.reward_shaping.step(doom_state)
 
                 reward = self.reward_shaping.get_reward(reward, doom_state)
 
@@ -90,6 +92,9 @@ class VizDoomEnv(Env):
 
         terminated = self.game.is_episode_finished()
         truncated = False
+
+        if terminated and self.reward_shaping is not None:
+            self.reward_shaping.episode_finished()
 
         return screen_buffer, reward, terminated, truncated, {}
 

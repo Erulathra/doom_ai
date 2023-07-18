@@ -1,9 +1,10 @@
 import os.path
+from EventBuffer import EventBuffer
 
 from TrainAndLoggingCallback import TrainAndLoggingCallback
 
-from stable_baselines3.common.env_checker import check_env
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, A2C
+from stable_baselines3.common.env_util import make_vec_env
 
 from VizDoomEnv import VizDoomEnv
 
@@ -12,11 +13,11 @@ from RewardShaping import RewardShaping
 scenario = "deathmatch"
 
 learning_rate = 7e-4
-steps = 1024
+steps = 32
 batch_size = 64
-total_timesteps = 10000000
-clip_range = 0.15
-gae_lambda = 0.90
+total_timesteps = int(1e7)
+clip_range = 0.5
+gae_lambda = 0.99
 
 frame_skip = 4
 
@@ -27,31 +28,47 @@ LOG_DIR = os.path.join(os.path.curdir, "logs", scenario)
 
 
 def main():
-    env = VizDoomEnv(
-        scenario,
-        frame_skip=frame_skip,
-        is_converting_to_gray=is_gray_observation,
-        doom_skill=3,
-        reward_shaping=RewardShaping(),
+    # env = VizDoomEnv(
+    #     scenario,
+    #     frame_skip=frame_skip,
+    #     is_converting_to_gray=is_gray_observation,
+    #     doom_skill=3,
+    #     reward_shaping=RewardShaping(),
+    # )
+    event_buffer = EventBuffer(7)
+    reward_shaping = RewardShaping(event_buffer)
+
+    env = make_vec_env(
+        VizDoomEnv,
+        n_envs=4,
+        env_kwargs={
+            "scenario": scenario,
+            "frame_skip": frame_skip,
+            "is_converting_to_gray": is_gray_observation,
+            "doom_skill": 3,
+            "reward_shaping": reward_shaping,
+        },
     )
-    check_env(env)
 
-    callback = TrainAndLoggingCallback(check_freq=10000, save_path=CHECKPOINT_DIR)
+    callback = TrainAndLoggingCallback(
+        check_freq=10000, save_path=CHECKPOINT_DIR, reward_shaping=reward_shaping
+    )
 
-    model = PPO(
+    model = A2C(
         "CnnPolicy",
         env,
         tensorboard_log=LOG_DIR,
         verbose=1,
         learning_rate=learning_rate,
         n_steps=steps,
-        gae_lambda=gae_lambda,
-        clip_range=lambda _: clip_range,
-        batch_size=batch_size,
+        gamma=0.99,
+        ent_coef=0.01,
+        vf_coef=0.5,
+        max_grad_norm=0.5,
     )
 
-    # model = PPO.load("model/deathmatch/bc_best_model_1200000.zip")
-    model.set_env(env)
+    # model = PPO.load("model/deathmatch/best_model_1240000.zip")
+    # model.set_env(env)
 
     model.learn(total_timesteps=total_timesteps, callback=callback)
 
