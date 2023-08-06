@@ -4,6 +4,7 @@ import vizdoom as vzd
 from enum import Enum
 
 from EventBuffer import EventBuffer
+from PositionBuffer import PositionBuffer
 
 # Game variables
 HEALTH = 0
@@ -30,8 +31,9 @@ class RewardShaping:
         self.event_buffer = event_buffer
 
         self.distance_moved_squared = 0
-
         self.intrinsic_reward = 0
+
+        self.position_buffer = PositionBuffer()
 
     def get_reward(self, reward: float, doom_state: vzd.GameState) -> float:
         intrinsic_reward_this_step = self.event_buffer.intrinsic_reward(self.events_this_step)
@@ -42,6 +44,10 @@ class RewardShaping:
         self.events_this_step = self._get_events(doom_state)
 
         self.events_this_episode += self.events_this_step
+
+        game_variables = doom_state.game_variables
+        self.position_buffer.record_position((game_variables[POSITION_X], game_variables[POSITION_Y]))
+
         return
 
     def new_episode(self, doom_state: vzd.GameState):

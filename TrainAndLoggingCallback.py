@@ -1,7 +1,11 @@
 import os
-import tensorboard as tb
+
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorboard as tf
 
 from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.logger import Figure
 
 
 class TrainAndLoggingCallback(BaseCallback):
@@ -28,7 +32,14 @@ class TrainAndLoggingCallback(BaseCallback):
             for name, value in statistics.items():
                 self.logger.record(f"emo/{name}", value)
 
-        
+            self._log_heatmap()
+
         return True
 
-
+    def _log_heatmap(self):
+        if self.num_timesteps % 12800 == 0 and self.num_timesteps != 0:
+            figure = plt.Figure()
+            data = self.reward_shaping.position_buffer.get_position_heat_matrix((64, 64))
+            figure.add_subplot().imshow(data, cmap='hot', interpolation='nearest')
+            self.logger.record("position/heatmap", Figure(figure, close=True), exclude=("stdout", "log", "json", "csv"))
+            plt.close()

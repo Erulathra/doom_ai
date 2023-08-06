@@ -10,7 +10,7 @@ from VizDoomEnv import VizDoomEnv
 
 from RewardShaping import RewardShaping
 
-scenario = "deathmatch"
+scenario = "my_way_home"
 
 learning_rate = 7e-4
 steps = 32
@@ -28,13 +28,6 @@ LOG_DIR = os.path.join(os.path.curdir, "logs", scenario)
 
 
 def main():
-    # env = VizDoomEnv(
-    #     scenario,
-    #     frame_skip=frame_skip,
-    #     is_converting_to_gray=is_gray_observation,
-    #     doom_skill=3,
-    #     reward_shaping=RewardShaping(),
-    # )
     event_buffer = EventBuffer(7)
     reward_shaping = RewardShaping(event_buffer)
 
@@ -45,7 +38,7 @@ def main():
             "scenario": scenario,
             "frame_skip": frame_skip,
             "is_converting_to_gray": is_gray_observation,
-            "doom_skill": 3,
+            "doom_skill": 4,
             "reward_shaping": reward_shaping,
         },
     )
