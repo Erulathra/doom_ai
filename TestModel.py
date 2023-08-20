@@ -15,7 +15,7 @@ from TrainModel import is_gray_observation
 from RewardShaping import RewardShaping
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/deathmatch/BC_best_model_1550000.zip"
+MODEL_DIR = "model/Final/Classic_My_Way_Home_model.zip"
 
 def main():
     model = A2C.load(MODEL_DIR)
@@ -27,7 +27,7 @@ def main():
         scenario,
         is_window_visible=True,
         is_converting_to_gray=is_gray_observation,
-        doom_skill=1,
+        doom_skill=3,
         reward_shaping=reward_shaping,
     )
     env.frame_skip = 1

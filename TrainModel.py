@@ -8,9 +8,9 @@ from stable_baselines3.common.env_util import make_vec_env
 
 from VizDoomEnv import VizDoomEnv
 
-from RewardShaping import RewardShaping
+from RewardShaping import RewardShaping, SimpleRewardShaping
 
-scenario = "my_way_home"
+scenario = "deathmatch"
 
 learning_rate = 7e-4
 steps = 32
@@ -29,7 +29,8 @@ LOG_DIR = os.path.join(os.path.curdir, "logs", scenario)
 
 def main():
     event_buffer = EventBuffer(7)
-    reward_shaping = RewardShaping(event_buffer)
+    # reward_shaping = RewardShaping(event_buffer)
+    reward_shaping = SimpleRewardShaping(event_buffer)
 
     env = make_vec_env(
         VizDoomEnv,
@@ -38,7 +39,7 @@ def main():
             "scenario": scenario,
             "frame_skip": frame_skip,
             "is_converting_to_gray": is_gray_observation,
-            "doom_skill": 4,
+            "doom_skill": 3,
             "reward_shaping": reward_shaping,
         },
     )

@@ -16,6 +16,7 @@ POSITION_X = 5
 POSITION_Y = 6
 KILLS = 7
 
+
 class EventType(Enum):
     MOVEMENT = 1
     SHOOTING = 2
@@ -32,12 +33,14 @@ class RewardShaping:
 
         self.distance_moved_squared = 0
         self.intrinsic_reward = 0
+        self.extrinsic_reward = 0
 
         self.position_buffer = PositionBuffer()
 
     def get_reward(self, reward: float, doom_state: vzd.GameState) -> float:
         intrinsic_reward_this_step = self.event_buffer.intrinsic_reward(self.events_this_step)
         self.intrinsic_reward += intrinsic_reward_this_step
+        self.extrinsic_reward += reward
         return reward + intrinsic_reward_this_step
 
     def step(self, doom_state: vzd.GameState):
@@ -52,6 +55,7 @@ class RewardShaping:
 
     def new_episode(self, doom_state: vzd.GameState):
         self.events_this_episode = np.zeros(len(EventType))
+        self.extrinsic_reward = 0
         self.intrinsic_reward = 0
 
         return
@@ -109,14 +113,15 @@ class RewardShaping:
     def get_statistics(self):
         result = {}
         result["intrinsic_reward"] = self.intrinsic_reward
+        result["extrinsic_reward"] = self.extrinsic_reward
 
-        events_types = range(1, len(EventType))
+        events_types = range(1, len(EventType) + 1)
         event_mean = self.event_buffer.get_event_mean()
         for i, event_type in enumerate(events_types):
             event_type_enum = EventType(event_type)
 
             result[event_type_enum.name] = event_mean[i]
-        
+
         return result
 
     # event logic
@@ -160,15 +165,23 @@ class RewardShaping:
         position_x = game_variables[POSITION_X]
         position_y = game_variables[POSITION_Y]
 
-        delta_x = position_x - self.previous_position_x
-        delta_y = position_y - self.previous_position_y
+        delta_x = (position_x - self.previous_position_x)
+        delta_y = (position_y - self.previous_position_y)
 
-        distance_squared = delta_x**2 + delta_y**2
+        distance_squared = delta_x ** 2 + delta_y ** 2
 
         self.distance_moved_squared += distance_squared
 
-        if self.distance_moved_squared > (1.0**2):
+        if self.distance_moved_squared ** 0.5 > 1.0:
             self.distance_moved_squared = 0
             return EventType.MOVEMENT.value
 
         return 0
+
+
+class SimpleRewardShaping(RewardShaping):
+
+    def get_reward(self, reward: float, doom_state: vzd.GameState) -> float:
+        self.intrinsic_reward = 0
+        self.extrinsic_reward += reward
+        return reward
