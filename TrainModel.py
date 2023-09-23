@@ -10,7 +10,7 @@ from VizDoomEnv import VizDoomEnv
 
 from RewardShaping import RewardShaping, SimpleRewardShaping
 
-scenario = "deathmatch"
+scenario = "simple_deathmatch"
 
 learning_rate = 7e-4
 steps = 32
@@ -21,6 +21,8 @@ gae_lambda = 0.99
 
 frame_skip = 4
 
+memory_size = 5
+
 is_gray_observation = True
 
 CHECKPOINT_DIR = os.path.join(os.path.curdir, "model", scenario)
@@ -29,8 +31,8 @@ LOG_DIR = os.path.join(os.path.curdir, "logs", scenario)
 
 def main():
     event_buffer = EventBuffer(7)
-    # reward_shaping = RewardShaping(event_buffer)
-    reward_shaping = SimpleRewardShaping(event_buffer)
+    reward_shaping = RewardShaping(event_buffer)
+    # reward_shaping = SimpleRewardShaping(event_buffer)
 
     env = make_vec_env(
         VizDoomEnv,
@@ -38,9 +40,9 @@ def main():
         env_kwargs={
             "scenario": scenario,
             "frame_skip": frame_skip,
-            "is_converting_to_gray": is_gray_observation,
             "doom_skill": 3,
             "reward_shaping": reward_shaping,
+            "memory_size": memory_size
         },
     )
 

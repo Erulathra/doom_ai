@@ -21,9 +21,9 @@ class VizDoomEnv(Env):
         frame_skip=10,
         resolution=(160, 120),
         is_window_visible=False,
-        is_converting_to_gray=False,
         doom_skill=-1,
         reward_shaping=None,
+        memory_size=1,
     ):
         super().__init__()
 
@@ -34,7 +34,6 @@ class VizDoomEnv(Env):
         self.frame_skip = frame_skip
 
         self._is_window_visible = is_window_visible
-        self._is_converting_to_gray = is_converting_to_gray
 
         self.game = vzd.DoomGame()
 
@@ -44,12 +43,15 @@ class VizDoomEnv(Env):
         if os.path.exists(wad_path):
             self.game.set_doom_game_path(wad_path)
 
+        self.is_first_step = True
+
+        self.memory_size = memory_size
+        self.memory = []
+
         self._setup_game()
         self._setup_environment()
         self.frame_skip = frame_skip
         self.reward_shaping = reward_shaping
-
-        self.is_first_step = True
 
     def _setup_game(self):
         self.game.load_config(self.scenario_path)
@@ -59,10 +61,7 @@ class VizDoomEnv(Env):
         self.game.init()
 
     def _setup_environment(self):
-        if self._is_converting_to_gray:
-            shape = (self.resolution[1], self.resolution[0], 1)
-        else:
-            shape = (self.resolution[1], self.resolution[0], 3)
+        shape = (self.memory_size, self.resolution[1], self.resolution[0])
 
         self.observation_space = Box(low=0, high=255, shape=shape, dtype=np.uint8)
         self.action_space = Discrete(self.number_of_actions)
@@ -88,15 +87,22 @@ class VizDoomEnv(Env):
             self.is_first_step = False
 
         else:
-            screen_buffer = np.zeros(self.observation_space.shape)
+            screen_buffer = np.zeros((self.resolution[1], self.resolution[0]))
 
         terminated = self.game.is_episode_finished()
         truncated = False
 
+        self.append_frame_to_memory(screen_buffer)
+
         if terminated and self.reward_shaping is not None:
             self.reward_shaping.episode_finished()
 
-        return screen_buffer, reward, terminated, truncated, {}
+        return self.get_memory_matrix(), reward, terminated, truncated, {}
+
+    def append_frame_to_memory(self, screen_buffer):
+        self.memory.append(screen_buffer)
+        if len(self.memory) >= self.memory_size:
+            self.memory.pop(0)
 
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
         self.game.new_episode()
@@ -109,26 +115,29 @@ class VizDoomEnv(Env):
         screen_buffer = doom_state.screen_buffer
         screen_buffer = self.prepare_color_buffer(screen_buffer)
 
+        self.append_frame_to_memory(screen_buffer)
+
+        memory_matrix = self.get_memory_matrix()
+
         self.is_first_step = True
 
-        return screen_buffer, {}
+        return memory_matrix, {}
+
+    def get_memory_matrix(self):
+        memory_matrix = np.zeros((self.memory_size, self.resolution[1], self.resolution[0]))
+        for i, frame in enumerate(self.memory):
+            matrix_index = self.memory_size - 1 - i
+            memory_matrix[matrix_index] = frame
+        return memory_matrix
 
     def prepare_color_buffer(self, observation):
-        if self._is_converting_to_gray:
-            image = cv2.cvtColor(np.moveaxis(observation, 0, -1), cv2.COLOR_BGR2GRAY)
-            resize = cv2.resize(
-                np.moveaxis(image, 0, -1),
-                self.resolution,
-                interpolation=cv2.INTER_CUBIC,
-            )
-            return np.reshape(resize, (self.resolution[1], self.resolution[0], 1))
-        else:
-            resize = cv2.resize(
-                np.moveaxis(observation, 0, -1),
-                self.resolution,
-                interpolation=cv2.INTER_CUBIC,
-            )
-            return np.reshape(resize, (self.resolution[1], self.resolution[0], 3))
+        image = cv2.cvtColor(np.moveaxis(observation, 0, -1), cv2.COLOR_BGR2GRAY)
+        resize = cv2.resize(
+            np.moveaxis(image, 0, -1),
+            self.resolution,
+            interpolation=cv2.INTER_CUBIC,
+        )
+        return np.reshape(resize, (self.resolution[1], self.resolution[0]))
 
     def close(self):
         self.game.close()
