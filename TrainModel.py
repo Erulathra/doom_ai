@@ -50,6 +50,7 @@ def main():
         check_freq=10000, save_path=CHECKPOINT_DIR, reward_shaping=reward_shaping
     )
 
+    # A2C
     model = A2C(
         "CnnPolicy",
         env,
@@ -62,6 +63,22 @@ def main():
         vf_coef=0.5,
         max_grad_norm=0.5,
     )
+
+    # PPO
+    # model = PPO (
+    #     "CnnPolicy",
+    #     env,
+    #     tensorboard_log=LOG_DIR,
+    #     verbose=1,
+    #     learning_rate=learning_rate,
+    #     n_steps=1024,
+    #     batch_size=64,
+    #     gamma=0.99,
+    #     gae_lambda=0.95,
+    #     ent_coef=0.01,
+    #     vf_coef=0.01,
+    #     max_grad_norm=0.5,
+    # )
 
     # model = PPO.load("model/deathmatch/best_model_1240000.zip")
     # model.set_env(env)

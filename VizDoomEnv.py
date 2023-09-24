@@ -11,6 +11,8 @@ from gymnasium import Env
 from gymnasium.core import ActType, ObsType
 from gymnasium.spaces import Box, Discrete
 
+from  VizDoomActionSpace import get_available_actions
+
 wad_path = "Test/DOOM2.WAD"
 
 
@@ -55,7 +57,6 @@ class VizDoomEnv(Env):
 
     def _setup_game(self):
         self.game.load_config(self.scenario_path)
-        self.number_of_actions = self.game.get_available_buttons_size()
 
         self.game.set_window_visible(self._is_window_visible)
         self.game.init()
@@ -63,12 +64,14 @@ class VizDoomEnv(Env):
     def _setup_environment(self):
         shape = (self.memory_size, self.resolution[1], self.resolution[0])
 
+        available_buttons = self.game.get_available_buttons()
+        self.available_actions = get_available_actions(available_buttons)
+
         self.observation_space = Box(low=0, high=255, shape=shape, dtype=np.uint8)
-        self.action_space = Discrete(self.number_of_actions)
+        self.action_space = Discrete(len(self.available_actions))
 
     def step(self, action: ActType):
-        available_actions = np.identity(self.number_of_actions, dtype=np.uint8)
-        reward = self.game.make_action(available_actions[action], self.frame_skip)
+        reward = self.game.make_action(self.available_actions[action], self.frame_skip)
 
         # Get State data
         if self.game.get_state():
