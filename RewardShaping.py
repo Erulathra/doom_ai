@@ -15,6 +15,7 @@ DAMAGE_COUNT = 4
 POSITION_X = 5
 POSITION_Y = 6
 KILLS = 7
+FRAGS = 8
 
 
 class EventType(Enum):
@@ -25,6 +26,7 @@ class EventType(Enum):
     KILL_MONSTER = 5
     DAMAGE_MONSTER = 6
     PICKUP_ARMOUR = 7
+    FRAGS = 8
 
 
 class RewardShaping:
@@ -78,6 +80,7 @@ class RewardShaping:
         self.previous_position_y = game_variables[POSITION_Y]
         self.previous_kills = game_variables[KILLS]
         self.previous_damage_count = game_variables[DAMAGE_COUNT]
+        self.previous_frags = game_variables[FRAGS]
 
         return
 
@@ -92,6 +95,7 @@ class RewardShaping:
             self.get_killing_event,
             self.get_damage_event,
             self.get_pickup_armour_event,
+            self.get_frags_event
         ]
 
         events = np.zeros(len(EventType))
@@ -107,6 +111,7 @@ class RewardShaping:
         self.previous_position_y = game_variables[POSITION_Y]
         self.previous_kills = game_variables[KILLS]
         self.previous_damage_count = game_variables[DAMAGE_COUNT]
+        self.previous_frags = game_variables[FRAGS]
 
         return events
 
@@ -175,6 +180,15 @@ class RewardShaping:
         if self.distance_moved_squared ** 0.5 > 1.0:
             self.distance_moved_squared = 0
             return EventType.MOVEMENT.value
+
+        return 0
+
+    def get_frags_event(self, game_variables):
+        if len(game_variables) < FRAGS:
+            return 0
+
+        if game_variables[FRAGS] > self.previous_frags:
+            return EventType.FRAGS.value
 
         return 0
 

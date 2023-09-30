@@ -3,14 +3,15 @@ from EventBuffer import EventBuffer
 
 from TrainAndLoggingCallback import TrainAndLoggingCallback
 
-from stable_baselines3 import PPO, A2C
+from stable_baselines3 import PPO, A2C, DQN
 from stable_baselines3.common.env_util import make_vec_env
 
+from VizDoomBotsEnv import VizDoomBotsEnv
 from VizDoomEnv import VizDoomEnv
 
 from RewardShaping import RewardShaping, SimpleRewardShaping
 
-scenario = "simple_deathmatch"
+scenario = "bots_deathmatch"
 
 learning_rate = 7e-4
 steps = 32
@@ -21,7 +22,7 @@ gae_lambda = 0.99
 
 frame_skip = 4
 
-memory_size = 5
+memory_size = 0
 
 is_gray_observation = True
 
@@ -30,12 +31,12 @@ LOG_DIR = os.path.join(os.path.curdir, "logs", scenario)
 
 
 def main():
-    event_buffer = EventBuffer(7)
+    event_buffer = EventBuffer(8)
     reward_shaping = RewardShaping(event_buffer)
     # reward_shaping = SimpleRewardShaping(event_buffer)
 
     env = make_vec_env(
-        VizDoomEnv,
+        VizDoomBotsEnv,
         n_envs=4,
         env_kwargs={
             "scenario": scenario,
@@ -78,6 +79,16 @@ def main():
     #     ent_coef=0.01,
     #     vf_coef=0.01,
     #     max_grad_norm=0.5,
+    # )
+
+    # model = DQN(
+    #     "CnnPolicy",
+    #     env,
+    #     tensorboard_log=LOG_DIR,
+    #     verbose=1,
+    #     learning_rate=learning_rate,
+    #     gamma=0.99,
+    #     buffer_size=100000
     # )
 
     # model = PPO.load("model/deathmatch/best_model_1240000.zip")

@@ -1,6 +1,7 @@
 import os.path
 import time
 from EventBuffer import EventBuffer
+from VizDoomBotsEnv import VizDoomBotsEnv
 
 from VizDoomEnv import VizDoomEnv
 from rich import print
@@ -15,7 +16,7 @@ from TrainModel import is_gray_observation
 from RewardShaping import RewardShaping
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/Final/simple_deathmatch_mem_5.zip"
+MODEL_DIR = "model/bots_deathmatch/best_model_10000.zip"
 
 def main():
     model = A2C.load(MODEL_DIR)
@@ -23,10 +24,10 @@ def main():
     event_buffer = EventBuffer(7)
     reward_shaping = RewardShaping(event_buffer)
 
-    env = VizDoomEnv(
+    env = VizDoomBotsEnv(
         scenario,
         is_window_visible=True,
-        doom_skill=3,
+        doom_skill=4,
         reward_shaping=reward_shaping,
         memory_size=memory_size
     )

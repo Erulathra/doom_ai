@@ -11,21 +11,22 @@ from gymnasium import Env
 from gymnasium.core import ActType, ObsType
 from gymnasium.spaces import Box, Discrete
 
-from  VizDoomActionSpace import get_available_actions
+from VizDoomActionSpace import get_available_actions
 
 wad_path = "Test/DOOM2.WAD"
 
 
 class VizDoomEnv(Env):
     def __init__(
-        self,
-        scenario: str,
-        frame_skip=10,
-        resolution=(160, 120),
-        is_window_visible=False,
-        doom_skill=-1,
-        reward_shaping=None,
-        memory_size=1,
+            self,
+            scenario: str,
+            frame_skip=10,
+            resolution=(160, 120),
+            is_window_visible=False,
+            doom_skill=-1,
+            reward_shaping=None,
+            memory_size=1,
+            game_args=''
     ):
         super().__init__()
 
@@ -50,6 +51,8 @@ class VizDoomEnv(Env):
         self.memory_size = memory_size
         self.memory = []
 
+        self.game_args = game_args
+
         self._setup_game()
         self._setup_environment()
         self.frame_skip = frame_skip
@@ -58,6 +61,7 @@ class VizDoomEnv(Env):
     def _setup_game(self):
         self.game.load_config(self.scenario_path)
 
+        self.game.add_game_args(self.game_args)
         self.game.set_window_visible(self._is_window_visible)
         self.game.init()
 
@@ -109,7 +113,7 @@ class VizDoomEnv(Env):
 
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
         self.game.new_episode()
-        
+
         if self.reward_range is not None:
             self.reward_shaping.new_episode(self.game.get_state())
 
