@@ -1,9 +1,8 @@
-
 import numpy as np
 
 
 class EventBuffer:
-    def __init__(self, n, capacity = 100, event_clip=0.01):
+    def __init__(self, n, capacity=100, event_clip=0.01):
         self.n = n
         self.capacity = capacity
         self.idx = 0

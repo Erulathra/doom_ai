@@ -47,10 +47,3 @@ def get_available_actions(buttons: np.array) -> t.List[t.List[float]]:
 
     print('Built action space of size {} from buttons {}'.format(len(possible_actions), buttons))
     return possible_actions.tolist()
-
-
-possible_actions = get_available_actions(np.array([
-    Button.ATTACK, Button.MOVE_FORWARD, Button.MOVE_LEFT,
-    Button.MOVE_RIGHT, Button.TURN_LEFT, Button.TURN_RIGHT]))
-
-print(possible_actions)

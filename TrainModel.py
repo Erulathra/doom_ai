@@ -11,22 +11,11 @@ from VizDoomEnv import VizDoomEnv
 from RewardShaping import RewardShaping, SimpleRewardShaping
 
 scenario = "simple_deathmatch"
-
-learning_rate = 7e-4
-steps = 32
-batch_size = 64
-total_timesteps = int(1e7)
-clip_range = 0.5
-gae_lambda = 0.99
-
 frame_skip = 4
+memory_size = 1
 
-memory_size = 5
-
-is_gray_observation = True
-
-CHECKPOINT_DIR = os.path.join(os.path.curdir, "model", scenario)
-LOG_DIR = os.path.join(os.path.curdir, "logs", scenario)
+CHECKPOINT_DIR = os.path.join(os.path.curdir, "model", scenario, f"mem_{memory_size}")
+LOG_DIR = os.path.join(os.path.curdir, "logs", scenario, f"mem_{memory_size}")
 
 
 def main():
@@ -56,12 +45,14 @@ def main():
         env,
         tensorboard_log=LOG_DIR,
         verbose=1,
-        learning_rate=learning_rate,
-        n_steps=steps,
+        learning_rate=7e-4,
+        n_steps=16,
         gamma=0.99,
         ent_coef=0.01,
         vf_coef=0.5,
         max_grad_norm=0.5,
+        use_rms_prop=True,
+        rms_prop_eps=1e-5
     )
 
     # PPO
@@ -83,7 +74,7 @@ def main():
     # model = PPO.load("model/deathmatch/best_model_1240000.zip")
     # model.set_env(env)
 
-    model.learn(total_timesteps=total_timesteps, callback=callback)
+    model.learn(total_timesteps=1e7, callback=callback)
 
     env.close()
 
