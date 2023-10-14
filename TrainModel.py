@@ -15,7 +15,7 @@ frame_skip = 4
 memory_size = 5
 
 CHECKPOINT_DIR = os.path.join(os.path.curdir, "model", scenario, f"mem_{memory_size}")
-LOG_DIR = os.path.join(os.path.curdir, "logs", scenario, f"mem_{memory_size}")
+LOG_DIR = os.path.join(os.path.curdir, "logs", "new_plots", scenario, f"mem_{memory_size}")
 
 
 def main():

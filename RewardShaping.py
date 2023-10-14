@@ -62,7 +62,6 @@ class RewardShaping:
 
     def episode_finished(self):
         self.event_buffer.record_events(self.events_this_episode)
-
         return
 
     def first_step(self, doom_state: vzd.GameState):
@@ -111,16 +110,17 @@ class RewardShaping:
         return events
 
     def get_statistics(self):
-        result = {}
-        result["intrinsic_reward"] = self.intrinsic_reward
-        result["extrinsic_reward"] = self.extrinsic_reward
+        result = {
+            "intrinsic_reward": self.intrinsic_reward,
+            "extrinsic_reward": self.extrinsic_reward
+        }
 
         events_types = range(1, len(EventType) + 1)
-        event_mean = self.event_buffer.get_event_mean()
+
         for i, event_type in enumerate(events_types):
             event_type_enum = EventType(event_type)
 
-            result[event_type_enum.name] = event_mean[i]
+            result[event_type_enum.name] = self.events_this_episode[i]
 
         return result
 
