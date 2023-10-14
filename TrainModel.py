@@ -12,7 +12,7 @@ from RewardShaping import RewardShaping, SimpleRewardShaping
 
 scenario = "simple_deathmatch"
 frame_skip = 4
-memory_size = 1
+memory_size = 5
 
 CHECKPOINT_DIR = os.path.join(os.path.curdir, "model", scenario, f"mem_{memory_size}")
 LOG_DIR = os.path.join(os.path.curdir, "logs", scenario, f"mem_{memory_size}")
@@ -46,30 +46,14 @@ def main():
         tensorboard_log=LOG_DIR,
         verbose=1,
         learning_rate=7e-4,
-        n_steps=16,
+        n_steps=20,
         gamma=0.99,
         ent_coef=0.01,
         vf_coef=0.5,
         max_grad_norm=0.5,
-        use_rms_prop=True,
-        rms_prop_eps=1e-5
+        # use_rms_prop=True,
+        # rms_prop_eps=1e-5
     )
-
-    # PPO
-    # model = PPO (
-    #     "CnnPolicy",
-    #     env,
-    #     tensorboard_log=LOG_DIR,
-    #     verbose=1,
-    #     learning_rate=learning_rate,
-    #     n_steps=1024,
-    #     batch_size=64,
-    #     gamma=0.99,
-    #     gae_lambda=0.95,
-    #     ent_coef=0.01,
-    #     vf_coef=0.01,
-    #     max_grad_norm=0.5,
-    # )
 
     # model = PPO.load("model/deathmatch/best_model_1240000.zip")
     # model.set_env(env)

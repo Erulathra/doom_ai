@@ -9,6 +9,7 @@
 /logs
 /model
 /__pycache__
+/giphy
 
 *.bak
 .mypy_cache

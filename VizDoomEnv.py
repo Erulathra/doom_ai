@@ -55,19 +55,20 @@ class VizDoomEnv(Env):
         self.frame_skip = frame_skip
         self.reward_shaping = reward_shaping
 
+        self.is_first_step = True
+
     def _setup_game(self):
         self.game.load_config(self.scenario_path)
+        self.number_of_actions = self.game.get_available_buttons_size()
 
         self.game.set_window_visible(self._is_window_visible)
         self.game.init()
 
     def _setup_environment(self):
-        shape = (self.memory_size, self.resolution[1], self.resolution[0])
-
         available_buttons = self.game.get_available_buttons()
         self.available_actions = get_available_actions(available_buttons)
 
-        self.observation_space = Box(low=0, high=255, shape=shape, dtype=np.uint8)
+        self.observation_space = Box(low=0, high=255, shape=(self.memory_size, self.resolution[1], self.resolution[0]), dtype=np.uint8)
         self.action_space = Discrete(len(self.available_actions))
 
     def step(self, action: ActType):
@@ -134,12 +135,12 @@ class VizDoomEnv(Env):
         return memory_matrix
 
     def prepare_color_buffer(self, observation):
-        image = cv2.cvtColor(np.moveaxis(observation, 0, -1), cv2.COLOR_BGR2GRAY)
         resize = cv2.resize(
-            np.moveaxis(image, 0, -1),
+            np.moveaxis(observation, 0, -1),
             self.resolution,
             interpolation=cv2.INTER_CUBIC,
         )
+
         return np.reshape(resize, (self.resolution[1], self.resolution[0]))
 
     def close(self):

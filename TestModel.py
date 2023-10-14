@@ -9,13 +9,11 @@ from rich.progress import track
 from stable_baselines3 import PPO, A2C
 
 from TrainModel import scenario, memory_size
-from TrainModel import total_timesteps
-from TrainModel import is_gray_observation
 
 from RewardShaping import RewardShaping
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/Final/simple_deathmatch_mem_5.zip"
+MODEL_DIR = "model/simple_deathmatch/mem_5/best_model_2500000.zip"
 
 def main():
     model = A2C.load(MODEL_DIR)
