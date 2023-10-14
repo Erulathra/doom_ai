@@ -12,10 +12,17 @@ from RewardShaping import RewardShaping, SimpleRewardShaping
 
 scenario = "simple_deathmatch"
 frame_skip = 4
-memory_size = 5
+memory_size = 1
+advanced_actions = False
 
 CHECKPOINT_DIR = os.path.join(os.path.curdir, "model", scenario, f"mem_{memory_size}")
-LOG_DIR = os.path.join(os.path.curdir, "logs", "new_plots", scenario, f"mem_{memory_size}")
+
+if advanced_actions:
+    advanced_actions_str = 'adv_action_space'
+else:
+    advanced_actions_str = 'basic_action_space'
+
+LOG_DIR = os.path.join(os.path.curdir, "logs", "new_plots", scenario, f"mem_{memory_size}", f"{advanced_actions_str}")
 
 
 def main():
@@ -25,13 +32,15 @@ def main():
 
     env = make_vec_env(
         VizDoomEnv,
-        n_envs=4,
+        n_envs=1,
         env_kwargs={
             "scenario": scenario,
+            "is_window_visible": False,
             "frame_skip": frame_skip,
-            "doom_skill": 3,
+            "doom_skill": 4,
             "reward_shaping": reward_shaping,
-            "memory_size": memory_size
+            "memory_size": memory_size,
+            "advanced_actions": advanced_actions
         },
     )
 

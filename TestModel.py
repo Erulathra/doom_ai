@@ -27,7 +27,8 @@ def main():
         is_window_visible=True,
         doom_skill=3,
         reward_shaping=reward_shaping,
-        memory_size=memory_size
+        memory_size=5,
+        advanced_actions=True
     )
     env.frame_skip = 1
 

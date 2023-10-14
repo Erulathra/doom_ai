@@ -24,6 +24,7 @@ class VizDoomEnv(Env):
         doom_skill=-1,
         reward_shaping=None,
         memory_size=1,
+        advanced_actions=True
     ):
         super().__init__()
 
@@ -49,7 +50,7 @@ class VizDoomEnv(Env):
         self.memory = []
 
         self._setup_game()
-        self._setup_environment()
+        self._setup_environment(advanced_actions)
         self.frame_skip = frame_skip
         self.reward_shaping = reward_shaping
 
@@ -57,16 +58,17 @@ class VizDoomEnv(Env):
 
     def _setup_game(self):
         self.game.load_config(self.scenario_path)
-        self.number_of_actions = self.game.get_available_buttons_size()
-
         self._settup_doom_variables()
 
         self.game.set_window_visible(self._is_window_visible)
         self.game.init()
 
-    def _setup_environment(self):
+    def _setup_environment(self, advanced_actions: bool):
         available_buttons = self.game.get_available_buttons()
-        self.available_actions = get_available_actions(available_buttons)
+        if advanced_actions:
+            self.available_actions = get_available_actions(available_buttons)
+        else:
+            self.available_actions = np.identity(len(available_buttons))
 
         self.observation_space = Box(low=0, high=255, shape=(self.memory_size, self.resolution[1], self.resolution[0]), dtype=np.uint8)
         self.action_space = Discrete(len(self.available_actions))
@@ -111,7 +113,7 @@ class VizDoomEnv(Env):
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
         self.game.new_episode()
         
-        if self.reward_range is not None:
+        if self.reward_shaping is not None:
             self.reward_shaping.new_episode()
 
         doom_state: GameState = self.game.get_state()
