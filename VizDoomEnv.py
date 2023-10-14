@@ -1,17 +1,15 @@
 import os.path
 from typing import Any
 
-import numpy as np
 import cv2
-
+import numpy as np
 import vizdoom as vzd
-from vizdoom import GameState
-
 from gymnasium import Env
-from gymnasium.core import ActType, ObsType
+from gymnasium.core import ActType
 from gymnasium.spaces import Box, Discrete
+from vizdoom import GameState, GameVariable
 
-from  VizDoomActionSpace import get_available_actions
+from VizDoomActionSpace import get_available_actions
 
 wad_path = "Test/DOOM2.WAD"
 
@@ -61,6 +59,8 @@ class VizDoomEnv(Env):
         self.game.load_config(self.scenario_path)
         self.number_of_actions = self.game.get_available_buttons_size()
 
+        self._settup_doom_variables()
+
         self.game.set_window_visible(self._is_window_visible)
         self.game.init()
 
@@ -82,11 +82,11 @@ class VizDoomEnv(Env):
 
             if self.reward_shaping is not None:
                 if self.is_first_step:
-                    self.reward_shaping.first_step(doom_state)
+                    self.reward_shaping.first_step(self.game)
                 else:
-                    self.reward_shaping.step(doom_state)
+                    self.reward_shaping.step(self.game)
 
-                reward = self.reward_shaping.get_reward(reward, doom_state)
+                reward = self.reward_shaping.get_reward(reward)
 
             self.is_first_step = False
 
@@ -112,7 +112,7 @@ class VizDoomEnv(Env):
         self.game.new_episode()
         
         if self.reward_range is not None:
-            self.reward_shaping.new_episode(self.game.get_state())
+            self.reward_shaping.new_episode()
 
         doom_state: GameState = self.game.get_state()
 
@@ -145,3 +145,33 @@ class VizDoomEnv(Env):
 
     def close(self):
         self.game.close()
+
+    def _settup_doom_variables(self):
+        self.game.add_available_game_variable(GameVariable.AMMO0)
+        self.game.add_available_game_variable(GameVariable.AMMO1)
+        self.game.add_available_game_variable(GameVariable.AMMO2)
+        self.game.add_available_game_variable(GameVariable.AMMO3)
+        self.game.add_available_game_variable(GameVariable.AMMO4)
+        self.game.add_available_game_variable(GameVariable.AMMO5)
+        self.game.add_available_game_variable(GameVariable.AMMO6)
+        self.game.add_available_game_variable(GameVariable.AMMO7)
+        self.game.add_available_game_variable(GameVariable.AMMO8)
+        self.game.add_available_game_variable(GameVariable.AMMO9)
+        self.game.add_available_game_variable(GameVariable.WEAPON0)
+        self.game.add_available_game_variable(GameVariable.WEAPON1)
+        self.game.add_available_game_variable(GameVariable.WEAPON2)
+        self.game.add_available_game_variable(GameVariable.WEAPON3)
+        self.game.add_available_game_variable(GameVariable.WEAPON4)
+        self.game.add_available_game_variable(GameVariable.WEAPON5)
+        self.game.add_available_game_variable(GameVariable.WEAPON6)
+        self.game.add_available_game_variable(GameVariable.WEAPON7)
+        self.game.add_available_game_variable(GameVariable.WEAPON8)
+        self.game.add_available_game_variable(GameVariable.WEAPON9)
+        self.game.add_available_game_variable(GameVariable.POSITION_X)
+        self.game.add_available_game_variable(GameVariable.POSITION_Y)
+        self.game.add_available_game_variable(GameVariable.ON_GROUND)
+        self.game.add_available_game_variable(GameVariable.KILLCOUNT)
+        self.game.add_available_game_variable(GameVariable.DEATHCOUNT)
+        self.game.add_available_game_variable(GameVariable.ARMOR)
+        self.game.add_available_game_variable(GameVariable.FRAGCOUNT)
+        self.game.add_available_game_variable(GameVariable.HEALTH)

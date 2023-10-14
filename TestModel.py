@@ -15,6 +15,7 @@ from RewardShaping import RewardShaping
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
 MODEL_DIR = "model/simple_deathmatch/mem_5/best_model_2500000.zip"
 
+
 def main():
     model = A2C.load(MODEL_DIR)
 

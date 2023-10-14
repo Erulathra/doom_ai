@@ -3,18 +3,10 @@ import vizdoom as vzd
 
 from enum import Enum
 
+from vizdoom import GameVariable
+
 from EventBuffer import EventBuffer
 from PositionBuffer import PositionBuffer
-
-# Game variables
-HEALTH = 0
-ARMOUR = 1
-SELECTED_WEAPON = 2
-AMMO = 3
-DAMAGE_COUNT = 4
-POSITION_X = 5
-POSITION_Y = 6
-KILLS = 7
 
 
 class EventType(Enum):
@@ -37,23 +29,24 @@ class RewardShaping:
 
         self.position_buffer = PositionBuffer()
 
-    def get_reward(self, reward: float, doom_state: vzd.GameState) -> float:
+    def get_reward(self, reward: float) -> float:
         intrinsic_reward_this_step = self.event_buffer.intrinsic_reward(self.events_this_step)
         self.intrinsic_reward += intrinsic_reward_this_step
         self.extrinsic_reward += reward
         return reward + intrinsic_reward_this_step
 
-    def step(self, doom_state: vzd.GameState):
-        self.events_this_step = self._get_events(doom_state)
+    def step(self, doom_game: vzd.DoomGame):
+        self.events_this_step = self._get_events(doom_game)
 
         self.events_this_episode += self.events_this_step
 
-        game_variables = doom_state.game_variables
-        self.position_buffer.record_position((game_variables[POSITION_X], game_variables[POSITION_Y]))
+        self.position_buffer.record_position((
+            doom_game.get_game_variable(GameVariable.POSITION_X),
+            doom_game.get_game_variable(GameVariable.POSITION_Y)))
 
         return
 
-    def new_episode(self, doom_state: vzd.GameState):
+    def new_episode(self):
         self.events_this_episode = np.zeros(len(EventType))
         self.extrinsic_reward = 0
         self.intrinsic_reward = 0
@@ -64,25 +57,21 @@ class RewardShaping:
         self.event_buffer.record_events(self.events_this_episode)
         return
 
-    def first_step(self, doom_state: vzd.GameState):
+    def first_step(self, doom_game: vzd.DoomGame):
         self.events_this_step = np.zeros(len(EventType))
 
-        game_variables = doom_state.game_variables
-
-        self.previous_health = game_variables[HEALTH]
-        self.previous_armour = game_variables[ARMOUR]
-        self.selected_weapon = game_variables[SELECTED_WEAPON]
-        self.selected_weapon_ammo = game_variables[AMMO]
-        self.previous_position_x = game_variables[POSITION_X]
-        self.previous_position_y = game_variables[POSITION_Y]
-        self.previous_kills = game_variables[KILLS]
-        self.previous_damage_count = game_variables[DAMAGE_COUNT]
+        self.previous_health = doom_game.get_game_variable(GameVariable.HEALTH)
+        self.previous_armour = doom_game.get_game_variable(GameVariable.ARMOR)
+        self.selected_weapon = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON)
+        self.selected_weapon_ammo = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON_AMMO)
+        self.previous_position_x = doom_game.get_game_variable(GameVariable.POSITION_X)
+        self.previous_position_y = doom_game.get_game_variable(GameVariable.POSITION_Y)
+        self.previous_kills = doom_game.get_game_variable(GameVariable.KILLCOUNT)
+        self.previous_damage_count = doom_game.get_game_variable(GameVariable.DAMAGECOUNT)
 
         return
 
-    def _get_events(self, doom_state: vzd.GameState):
-        game_variables = doom_state.game_variables
-
+    def _get_events(self, doom_game: vzd.DoomGame):
         events_methods = [
             self.get_moving_event,
             self.get_shooting_event,
@@ -96,16 +85,16 @@ class RewardShaping:
         events = np.zeros(len(EventType))
 
         for (i, method) in enumerate(events_methods):
-            events[i] = int(method(game_variables) != 0)
+            events[i] = int(method(doom_game) != 0)
 
-        self.previous_health = game_variables[HEALTH]
-        self.previous_armour = game_variables[ARMOUR]
-        self.selected_weapon = game_variables[SELECTED_WEAPON]
-        self.selected_weapon_ammo = game_variables[AMMO]
-        self.previous_position_x = game_variables[POSITION_X]
-        self.previous_position_y = game_variables[POSITION_Y]
-        self.previous_kills = game_variables[KILLS]
-        self.previous_damage_count = game_variables[DAMAGE_COUNT]
+        self.previous_health = doom_game.get_game_variable(GameVariable.HEALTH)
+        self.previous_armour = doom_game.get_game_variable(GameVariable.ARMOR)
+        self.selected_weapon = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON)
+        self.selected_weapon_ammo = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON_AMMO)
+        self.previous_position_x = doom_game.get_game_variable(GameVariable.POSITION_X)
+        self.previous_position_y = doom_game.get_game_variable(GameVariable.POSITION_Y)
+        self.previous_kills = doom_game.get_game_variable(GameVariable.KILLCOUNT)
+        self.previous_damage_count = doom_game.get_game_variable(GameVariable.DAMAGECOUNT)
 
         return events
 
@@ -125,45 +114,51 @@ class RewardShaping:
         return result
 
     # event logic
-    def get_pickup_health_event(self, game_variables):
-        if game_variables[HEALTH] > self.previous_health:
+    def get_pickup_health_event(self, doom_game: vzd.DoomGame):
+        health = doom_game.get_game_variable(GameVariable.HEALTH)
+        if health > self.previous_health:
             return EventType.PICKUP_HEALTH.value
 
         return 0
 
-    def get_pickup_ammo_event(self, game_variables):
-        if game_variables[AMMO] > self.selected_weapon_ammo:
+    def get_pickup_ammo_event(self, doom_game: vzd.DoomGame):
+        ammo = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON_AMMO)
+        if ammo > self.selected_weapon_ammo:
             return EventType.PICKUP_AMMO.value
 
         return 0
 
-    def get_pickup_armour_event(self, game_variables):
-        if game_variables[ARMOUR] > self.previous_armour:
+    def get_pickup_armour_event(self, doom_game: vzd.DoomGame):
+        armour = doom_game.get_game_variable(GameVariable.ARMOR)
+        if armour > self.previous_armour:
             return EventType.PICKUP_ARMOUR.value
 
         return 0
 
-    def get_shooting_event(self, game_variables):
-        if game_variables[AMMO] < self.selected_weapon_ammo:
+    def get_shooting_event(self, doom_game: vzd.DoomGame):
+        ammo = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON_AMMO)
+        if ammo < self.selected_weapon_ammo:
             return EventType.SHOOTING.value
 
         return 0
 
-    def get_killing_event(self, game_variables):
-        if game_variables[KILLS] > self.previous_kills:
+    def get_killing_event(self, doom_game: vzd.DoomGame):
+        kills = doom_game.get_game_variable(GameVariable.KILLCOUNT)
+        if kills > self.previous_kills:
             return EventType.KILL_MONSTER.value
 
         return 0
 
-    def get_damage_event(self, game_variables):
-        if game_variables[DAMAGE_COUNT] > self.previous_damage_count:
+    def get_damage_event(self, doom_game: vzd.DoomGame):
+        damage_count = doom_game.get_game_variable(GameVariable.DAMAGECOUNT)
+        if damage_count > self.previous_damage_count:
             return EventType.DAMAGE_MONSTER.value
 
         return 0
 
-    def get_moving_event(self, game_variables):
-        position_x = game_variables[POSITION_X]
-        position_y = game_variables[POSITION_Y]
+    def get_moving_event(self, doom_game: vzd.DoomGame):
+        position_x = doom_game.get_game_variable(GameVariable.POSITION_X)
+        position_y = doom_game.get_game_variable(GameVariable.POSITION_Y)
 
         delta_x = (position_x - self.previous_position_x)
         delta_y = (position_y - self.previous_position_y)
@@ -181,7 +176,7 @@ class RewardShaping:
 
 class SimpleRewardShaping(RewardShaping):
 
-    def get_reward(self, reward: float, doom_state: vzd.GameState) -> float:
+    def get_reward(self, reward: float) -> float:
         self.intrinsic_reward = 0
         self.extrinsic_reward += reward
         return reward
