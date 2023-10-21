@@ -10,26 +10,29 @@ from stable_baselines3 import PPO, A2C
 
 from TrainModel import scenario, memory_size
 
-from RewardShaping import RewardShaping
+from ROERewardShaping import ROERewardShaping
 
 import imageio
 
 GIF_DIR = os.path.join('./', 'giphy', scenario)
 GIF_PATH = os.path.join(GIF_DIR, f'mem_{memory_size}.gif')
-MODEL_DIR = "model/simple_deathmatch/mem_5/best_model_2500000.zip"
+MODEL_DIR = "model/simple_deathmatch/mem_1/best_model_980000.zip"
+
 
 def main():
     model = A2C.load(MODEL_DIR)
-
-    event_buffer = EventBuffer(7)
-    reward_shaping = RewardShaping(event_buffer)
 
     env = VizDoomEnv(
         scenario,
         is_window_visible=False,
         doom_skill=2,
-        reward_shaping=reward_shaping,
-        memory_size=memory_size
+        memory_size=memory_size,
+
+        reward_shaping_class=ROERewardShaping,
+        reward_shaping_kwargs={
+            'event_buffer_class': EventBuffer,
+            'event_buffer_kwargs': {'n': 7}
+        }
     )
     env.frame_skip = 1
 

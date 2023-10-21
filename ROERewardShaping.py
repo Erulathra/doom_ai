@@ -19,9 +19,9 @@ class EventType(Enum):
     PICKUP_ARMOUR = 7
 
 
-class RewardShaping:
-    def __init__(self, event_buffer: EventBuffer) -> None:
-        self.event_buffer = event_buffer
+class ROERewardShaping:
+    def __init__(self, event_buffer_class, event_buffer_kwargs) -> None:
+        self.event_buffer = event_buffer_class(**event_buffer_kwargs)
 
         self.distance_moved_squared = 0
         self.intrinsic_reward = 0
@@ -169,7 +169,7 @@ class RewardShaping:
         return 0
 
 
-class SimpleRewardShaping(RewardShaping):
+class SimpleRewardShaping(ROERewardShaping):
 
     def get_reward(self, reward: float) -> float:
         self.intrinsic_reward = 0

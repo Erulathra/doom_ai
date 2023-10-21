@@ -9,6 +9,7 @@ from gymnasium.core import ActType
 from gymnasium.spaces import Box, Discrete
 from vizdoom import GameState, GameVariable
 
+from ROERewardShaping import ROERewardShaping
 from VizDoomActionSpace import get_available_actions
 
 wad_path = "Test/DOOM2.WAD"
@@ -16,15 +17,16 @@ wad_path = "Test/DOOM2.WAD"
 
 class VizDoomEnv(Env):
     def __init__(
-        self,
-        scenario: str,
-        frame_skip=10,
-        resolution=(160, 120),
-        is_window_visible=False,
-        doom_skill=-1,
-        reward_shaping=None,
-        memory_size=1,
-        advanced_actions=True
+            self,
+            scenario: str,
+            frame_skip=10,
+            resolution=(160, 120),
+            is_window_visible=False,
+            doom_skill=-1,
+            reward_shaping_class=None,
+            reward_shaping_kwargs={},
+            memory_size=1,
+            advanced_actions=True
     ):
         super().__init__()
 
@@ -52,7 +54,7 @@ class VizDoomEnv(Env):
         self._setup_game()
         self._setup_environment(advanced_actions)
         self.frame_skip = frame_skip
-        self.reward_shaping = reward_shaping
+        self.reward_shaping = reward_shaping_class(**reward_shaping_kwargs)
 
         self.is_first_step = True
 
@@ -70,7 +72,8 @@ class VizDoomEnv(Env):
         else:
             self.available_actions = np.identity(len(available_buttons))
 
-        self.observation_space = Box(low=0, high=255, shape=(self.memory_size, self.resolution[1], self.resolution[0]), dtype=np.uint8)
+        self.observation_space = Box(low=0, high=255, shape=(self.memory_size, self.resolution[1], self.resolution[0]),
+                                     dtype=np.uint8)
         self.action_space = Discrete(len(self.available_actions))
 
     def step(self, action: ActType):
@@ -112,7 +115,7 @@ class VizDoomEnv(Env):
 
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
         self.game.new_episode()
-        
+
         if self.reward_shaping is not None:
             self.reward_shaping.new_episode()
 
@@ -177,3 +180,15 @@ class VizDoomEnv(Env):
         self.game.add_available_game_variable(GameVariable.ARMOR)
         self.game.add_available_game_variable(GameVariable.FRAGCOUNT)
         self.game.add_available_game_variable(GameVariable.HEALTH)
+
+    def get_statistics(self):
+        if self.reward_shaping is None:
+            return {}
+
+        return self.reward_shaping.get_statistics()
+
+    def get_position_heat_matrix(self, size: tuple[int, int]):
+        if self.reward_shaping is None:
+            return np.zeros(shape=size)
+
+        return self.reward_shaping.position_buffer.get_position_heat_matrix(size)

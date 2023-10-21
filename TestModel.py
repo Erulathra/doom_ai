@@ -10,25 +10,27 @@ from stable_baselines3 import PPO, A2C
 
 from TrainModel import scenario, memory_size
 
-from RewardShaping import RewardShaping
+from ROERewardShaping import ROERewardShaping
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/simple_deathmatch/mem_5/best_model_2500000.zip"
+MODEL_DIR = "model/simple_deathmatch/mem_1/best_model_450000.zip"
 
 
 def main():
     model = A2C.load(MODEL_DIR)
 
-    event_buffer = EventBuffer(7)
-    reward_shaping = RewardShaping(event_buffer)
-
     env = VizDoomEnv(
         scenario,
         is_window_visible=True,
         doom_skill=3,
-        reward_shaping=reward_shaping,
-        memory_size=5,
-        advanced_actions=True
+        memory_size=1,
+        advanced_actions=True,
+
+        reward_shaping_class=ROERewardShaping,
+        reward_shaping_kwargs={
+            'event_buffer_class': EventBuffer,
+            'event_buffer_kwargs': {'n': 7}
+        }
     )
     env.frame_skip = 1
 
@@ -41,11 +43,11 @@ def main():
         while not terminated:
             action, _ = model.predict(obs)
             obs, reward, terminated, _, info = env.step(action)
-            time.sleep(1.0 / (60.0 * 2))
+            # time.sleep(1.0 / (60.0 * 2))
             total_reward += reward
 
         print(f"{episode}. Total Reward: {total_reward}")
-        print(reward_shaping.get_statistics())
+        print(env.get_statistics())
 
     env.close()
 
