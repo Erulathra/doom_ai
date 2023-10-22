@@ -8,12 +8,12 @@ from rich.progress import track
 
 from stable_baselines3 import PPO, A2C
 
-from TrainModel import scenario, memory_size
+from TrainModel import scenario, memory_size, advanced_actions
 
 from RewardShaping import RewardShaping
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/simple_deathmatch/mem_5/best_model_2500000.zip"
+MODEL_DIR = "model/deadly_corridor/mem_1/best_model_2500000.zip"
 
 
 def main():
@@ -27,8 +27,8 @@ def main():
         is_window_visible=True,
         doom_skill=3,
         reward_shaping=reward_shaping,
-        memory_size=5,
-        advanced_actions=True
+        memory_size=memory_size,
+        advanced_actions=advanced_actions
     )
     env.frame_skip = 1
 

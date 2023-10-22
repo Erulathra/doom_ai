@@ -10,7 +10,7 @@ from VizDoomEnv import VizDoomEnv
 
 from RewardShaping import RewardShaping, SimpleRewardShaping
 
-scenario = "simple_deathmatch"
+scenario = "deadly_corridor"
 frame_skip = 4
 memory_size = 1
 advanced_actions = False
@@ -22,7 +22,7 @@ if advanced_actions:
 else:
     advanced_actions_str = 'basic_action_space'
 
-LOG_DIR = os.path.join(os.path.curdir, "logs", "new_plots", scenario, f"mem_{memory_size}", f"{advanced_actions_str}")
+LOG_DIR = os.path.join(os.path.curdir, "logs", "debug", scenario, f"mem_{memory_size}", f"{advanced_actions_str}")
 
 
 def main():
@@ -32,7 +32,7 @@ def main():
 
     env = make_vec_env(
         VizDoomEnv,
-        n_envs=1,
+        n_envs=4,
         env_kwargs={
             "scenario": scenario,
             "is_window_visible": False,
@@ -55,7 +55,7 @@ def main():
         tensorboard_log=LOG_DIR,
         verbose=1,
         learning_rate=7e-4,
-        n_steps=20,
+        n_steps=32,
         gamma=0.99,
         ent_coef=0.01,
         vf_coef=0.5,
