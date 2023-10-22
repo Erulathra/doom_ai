@@ -110,7 +110,7 @@ class VizDoomEnv(Env):
 
     def append_frame_to_memory(self, screen_buffer):
         self.memory.append(screen_buffer)
-        if len(self.memory) >= self.memory_size:
+        if len(self.memory) > self.memory_size:
             self.memory.pop(0)
 
     def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
