@@ -1,4 +1,8 @@
 import os.path
+
+import wakepy
+from wakepy import keep
+
 from EventBuffer import EventBuffer
 
 from TrainAndLoggingCallback import TrainAndLoggingCallback
@@ -10,10 +14,10 @@ from VizDoomEnv import VizDoomEnv
 
 from ROERewardShaping import ROERewardShaping, SimpleRewardShaping
 
-scenario = "deadly_corridor"
+scenario = "simple_deathmatch"
 frame_skip = 4
 memory_size = 1
-advanced_actions = True
+advanced_actions = False
 
 CHECKPOINT_DIR = os.path.join(os.path.curdir, "model", scenario, f"mem_{memory_size}")
 
@@ -69,7 +73,11 @@ def main():
     # model = PPO.load("model/deathmatch/best_model_1240000.zip")
     # model.set_env(env)
 
-    model.learn(total_timesteps=1e7, callback=callback)
+    with keep.running() as m:
+        if not m.success:
+            print("Cannot prevent sleep")
+
+        model.learn(total_timesteps=1e7, callback=callback)
 
     env.close()
 
