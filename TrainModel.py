@@ -12,12 +12,12 @@ from stable_baselines3.common.env_util import make_vec_env
 
 from VizDoomEnv import VizDoomEnv
 
-from ROERewardShaping import ROERewardShaping, SimpleRewardShaping
+from ROERewardShaping import ROERewardShaping, SimpleRewardShaping, EVENTS_TYPES_NUMBER
 
-scenario = "simple_deathmatch"
+scenario = "deathmatch"
 frame_skip = 4
 memory_size = 1
-advanced_actions = False
+advanced_actions = True
 
 CHECKPOINT_DIR = os.path.join(os.path.curdir, "model", scenario, f"mem_{memory_size}")
 
@@ -26,7 +26,7 @@ if advanced_actions:
 else:
     advanced_actions_str = 'basic_action_space'
 
-LOG_DIR = os.path.join(os.path.curdir, "logs", "sep_buff", scenario, f"mem_{memory_size}", f"{advanced_actions_str}")
+LOG_DIR = os.path.join(os.path.curdir, "logs", "debug", scenario, f"mem_{memory_size}", f"{advanced_actions_str}")
 
 
 def main():
@@ -44,7 +44,7 @@ def main():
             'reward_shaping_class': ROERewardShaping,
             'reward_shaping_kwargs': {
                 'event_buffer_class': EventBuffer,
-                'event_buffer_kwargs': {'n': 7}
+                'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER}
             }
         },
 
@@ -69,9 +69,6 @@ def main():
         use_rms_prop=True,
         rms_prop_eps=1e-5
     )
-
-    # model = PPO.load("model/deathmatch/best_model_1240000.zip")
-    # model.set_env(env)
 
     with keep.running() as m:
         if not m.success:

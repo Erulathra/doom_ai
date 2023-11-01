@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import vizdoom as vzd
 
@@ -8,15 +10,21 @@ from vizdoom import GameVariable
 from EventBuffer import EventBuffer
 from PositionBuffer import PositionBuffer
 
+EVENTS_TYPES_NUMBER = 26
 
-class EventType(Enum):
-    MOVEMENT = 1
-    SHOOTING = 2
-    PICKUP_AMMO = 3
-    PICKUP_HEALTH = 4
-    KILL_MONSTER = 5
-    DAMAGE_MONSTER = 6
-    PICKUP_ARMOUR = 7
+
+class VizdoomEvent(Enum):
+    MOVEMENT = 0
+    PICKUP_HEALTH = 1
+    PICKUP_ARMOUR = 2
+    SHOOTING = 3
+    PICKUP_AMMO = 4,
+    WEAPON_PICKUP_START = 5
+    WEAPON_PICKUP_END = 14
+    KILL_MONSTER = 15
+    KILL_MONSTER_WEAPON_START = 16
+    KILL_MONSTER_WEAPON_END = 24
+    DAMAGE_MONSTER = 25
 
 
 class ROERewardShaping:
@@ -47,7 +55,7 @@ class ROERewardShaping:
         return
 
     def new_episode(self):
-        self.events_this_episode = np.zeros(len(EventType))
+        self.events_this_episode = np.zeros(EVENTS_TYPES_NUMBER)
         self.extrinsic_reward = 0
         self.intrinsic_reward = 0
 
@@ -55,43 +63,95 @@ class ROERewardShaping:
 
     def episode_finished(self):
         self.event_buffer.record_events(self.events_this_episode)
+
         return
 
     def first_step(self, doom_game: vzd.DoomGame):
-        self.events_this_step = np.zeros(len(EventType))
-        self._reset_previous_state(doom_game)
+        self.last_position_x = doom_game.get_game_variable(GameVariable.POSITION_X)
+        self.last_position_y = doom_game.get_game_variable(GameVariable.POSITION_Y)
+
+        self.events_this_step = np.zeros(EVENTS_TYPES_NUMBER)
+        self.current_vars = self._get_variables(doom_game)
+
+        self._reset_previous_state()
 
         return
 
-    def _reset_previous_state(self, doom_game):
-        self.previous_health = doom_game.get_game_variable(GameVariable.HEALTH)
-        self.previous_armour = doom_game.get_game_variable(GameVariable.ARMOR)
-        self.selected_weapon = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON)
-        self.selected_weapon_ammo = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON_AMMO)
-        self.previous_position_x = doom_game.get_game_variable(GameVariable.POSITION_X)
-        self.previous_position_y = doom_game.get_game_variable(GameVariable.POSITION_Y)
-        self.previous_kills = doom_game.get_game_variable(GameVariable.KILLCOUNT)
-        self.previous_damage_count = doom_game.get_game_variable(GameVariable.DAMAGECOUNT)
+    def _reset_previous_state(self):
+        self.last_vars = self.current_vars
 
     def _get_events(self, doom_game: vzd.DoomGame):
-        events_methods = [
-            self.get_moving_event,
-            self.get_shooting_event,
-            self.get_pickup_ammo_event,
-            self.get_pickup_health_event,
-            self.get_killing_event,
-            self.get_damage_event,
-            self.get_pickup_armour_event,
-        ]
+        self.current_vars = self._get_variables(doom_game)
 
-        events = np.zeros(len(EventType))
+        events = np.zeros(EVENTS_TYPES_NUMBER)
 
-        for (i, method) in enumerate(events_methods):
-            events[i] = int(method(doom_game) != 0)
+        # If died -> no event
+        if self.current_vars[15] > self.last_vars[15]:
+            return events
 
-        self._reset_previous_state(doom_game)
+        # 0. Movement
+        if self.current_vars[0] > self.last_vars[0]:
+            events[0] = 1
+
+        # 1. Health increase
+        if self.current_vars[1] > self.last_vars[1]:
+            events[1] = 1
+
+        # 2. Armor increase
+        if self.current_vars[2] > self.last_vars[2]:
+            events[2] = 1
+
+        # 3. Ammo decrease
+        if self.current_vars[3] < self.last_vars[3]:
+            events[3] = 1
+
+        # 4. Ammo increase
+        if self.current_vars[3] > self.last_vars[3]:
+            events[4] = 1
+
+        # 5-14. Weapon pickup 0-9
+        for i in range(4, 14):
+            if self.current_vars[i] > self.last_vars[i]:
+                events[i + 1] = 1
+
+        # 15-24 Kill increase - for each weapon
+        if self.current_vars[14] > self.last_vars[14]:
+            # events[15] = 1
+            for i in range(0, 9):
+                if self.current_vars[16] == i:  # If selected weapon
+                    events[15 + i] = 1
+
+        # 2
+        if self.current_vars[17] > self.last_vars[17]:
+            events[25] = 1
+
+        self._reset_previous_state()
 
         return events
+
+    def _get_variables(self, doom_game: vzd.DoomGame):
+        variables = [
+            self.get_distance_moved(doom_game),
+            doom_game.get_game_variable(GameVariable.HEALTH),
+            doom_game.get_game_variable(GameVariable.ARMOR),
+            doom_game.get_game_variable(GameVariable.SELECTED_WEAPON_AMMO),
+            doom_game.get_game_variable(GameVariable.WEAPON0),
+            doom_game.get_game_variable(GameVariable.WEAPON1),
+            doom_game.get_game_variable(GameVariable.WEAPON2),
+            doom_game.get_game_variable(GameVariable.WEAPON3),
+            doom_game.get_game_variable(GameVariable.WEAPON4),
+            doom_game.get_game_variable(GameVariable.WEAPON5),
+            doom_game.get_game_variable(GameVariable.WEAPON6),
+            doom_game.get_game_variable(GameVariable.WEAPON7),
+            doom_game.get_game_variable(GameVariable.WEAPON8),
+            doom_game.get_game_variable(GameVariable.WEAPON9),
+            doom_game.get_game_variable(GameVariable.KILLCOUNT) + doom_game.get_game_variable(GameVariable.FRAGCOUNT),
+            doom_game.get_game_variable(GameVariable.DEATHCOUNT),
+            doom_game.get_game_variable(GameVariable.SELECTED_WEAPON),
+            doom_game.get_game_variable(GameVariable.DAMAGECOUNT)
+        ]
+
+        return np.array(variables)
 
     def get_statistics(self):
         result = {
@@ -99,74 +159,42 @@ class ROERewardShaping:
             "extrinsic_reward": self.extrinsic_reward
         }
 
-        events_types = range(1, len(EventType) + 1)
+        events_to_record = [
+            VizdoomEvent.MOVEMENT,
+            VizdoomEvent.PICKUP_HEALTH,
+            VizdoomEvent.PICKUP_ARMOUR,
+            VizdoomEvent.PICKUP_AMMO,
+            VizdoomEvent.DAMAGE_MONSTER,
+            # VizdoomEvent.KILL_MONSTER,
+            VizdoomEvent.SHOOTING,
+        ]
 
-        for i, event_type in enumerate(events_types):
-            event_type_enum = EventType(event_type)
+        for event_type in events_to_record:
+            result[event_type.name] = self.events_this_episode[event_type.value]
 
-            result[event_type_enum.name] = self.events_this_episode[i]
+        kill_count = 0
+
+        for enum_id in range(VizdoomEvent.KILL_MONSTER_WEAPON_START.value,
+                             VizdoomEvent.KILL_MONSTER_WEAPON_END.value + 1):
+            kill_count += self.events_this_episode[enum_id]
+
+        result["KILL_MONSTER"] = kill_count
+
 
         return result
 
-    # event logic
-    def get_pickup_health_event(self, doom_game: vzd.DoomGame):
-        health = doom_game.get_game_variable(GameVariable.HEALTH)
-        if health > self.previous_health:
-            return EventType.PICKUP_HEALTH.value
-
-        return 0
-
-    def get_pickup_ammo_event(self, doom_game: vzd.DoomGame):
-        ammo = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON_AMMO)
-        if ammo > self.selected_weapon_ammo:
-            return EventType.PICKUP_AMMO.value
-
-        return 0
-
-    def get_pickup_armour_event(self, doom_game: vzd.DoomGame):
-        armour = doom_game.get_game_variable(GameVariable.ARMOR)
-        if armour > self.previous_armour:
-            return EventType.PICKUP_ARMOUR.value
-
-        return 0
-
-    def get_shooting_event(self, doom_game: vzd.DoomGame):
-        ammo = doom_game.get_game_variable(GameVariable.SELECTED_WEAPON_AMMO)
-        if ammo < self.selected_weapon_ammo:
-            return EventType.SHOOTING.value
-
-        return 0
-
-    def get_killing_event(self, doom_game: vzd.DoomGame):
-        kills = doom_game.get_game_variable(GameVariable.KILLCOUNT)
-        if kills > self.previous_kills:
-            return EventType.KILL_MONSTER.value
-
-        return 0
-
-    def get_damage_event(self, doom_game: vzd.DoomGame):
-        damage_count = doom_game.get_game_variable(GameVariable.DAMAGECOUNT)
-        if damage_count > self.previous_damage_count:
-            return EventType.DAMAGE_MONSTER.value
-
-        return 0
-
-    def get_moving_event(self, doom_game: vzd.DoomGame):
+    def get_distance_moved(self, doom_game: vzd.DoomGame):
         position_x = doom_game.get_game_variable(GameVariable.POSITION_X)
         position_y = doom_game.get_game_variable(GameVariable.POSITION_Y)
 
-        delta_x = (position_x - self.previous_position_x)
-        delta_y = (position_y - self.previous_position_y)
+        delta_x = (position_x - self.last_position_x)
+        delta_y = (position_y - self.last_position_y)
 
         distance_squared = delta_x ** 2 + delta_y ** 2
 
         self.distance_moved_squared += distance_squared
 
-        if self.distance_moved_squared ** 0.5 > 1.0:
-            self.distance_moved_squared = 0
-            return EventType.MOVEMENT.value
-
-        return 0
+        return math.sqrt(self.distance_moved_squared)
 
 
 class SimpleRewardShaping(ROERewardShaping):
