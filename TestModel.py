@@ -10,10 +10,10 @@ from stable_baselines3 import PPO, A2C
 
 from TrainModel import scenario, memory_size
 
-from ROERewardShaping import ROERewardShaping
+from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/simple_deathmatch/mem_1/best_model_450000.zip"
+MODEL_DIR = "model/deathmatch/mem_1/best_model_1960000.zip"
 
 
 def main():
@@ -29,7 +29,7 @@ def main():
         reward_shaping_class=ROERewardShaping,
         reward_shaping_kwargs={
             'event_buffer_class': EventBuffer,
-            'event_buffer_kwargs': {'n': 7}
+            'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER}
         }
     )
     env.frame_skip = 1
