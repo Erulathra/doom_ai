@@ -1,6 +1,7 @@
 import os.path
 import time
 from EventBuffer import EventBuffer
+from VizDoomBotsEnv import VizDoomBotsEnv
 
 from VizDoomEnv import VizDoomEnv
 from rich import print
@@ -13,8 +14,7 @@ from TrainModel import scenario, memory_size
 from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/deathmatch/mem_1/best_model_1960000.zip"
-
+MODEL_DIR = "model/bots_deathmatch/best_model_10000.zip"
 
 def main():
     model = A2C.load(MODEL_DIR)

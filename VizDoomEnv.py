@@ -26,7 +26,8 @@ class VizDoomEnv(Env):
             reward_shaping_class=None,
             reward_shaping_kwargs={},
             memory_size=1,
-            advanced_actions=True
+            advanced_actions=True,
+            game_args=''
     ):
         super().__init__()
 
@@ -51,6 +52,8 @@ class VizDoomEnv(Env):
         self.memory_size = memory_size
         self.memory = []
 
+        self.game_args = game_args
+
         self._setup_game()
         self._setup_environment(advanced_actions)
         self.frame_skip = frame_skip
@@ -62,6 +65,7 @@ class VizDoomEnv(Env):
         self.game.load_config(self.scenario_path)
         self._settup_doom_variables()
 
+        self.game.add_game_args(self.game_args)
         self.game.set_window_visible(self._is_window_visible)
         self.game.init()
 
