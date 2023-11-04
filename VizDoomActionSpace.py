@@ -9,6 +9,7 @@ MUTUALLY_EXCLUSIVE_GROUPS = [
     [Button.MOVE_RIGHT, Button.MOVE_LEFT],
     [Button.TURN_RIGHT, Button.TURN_LEFT],
     [Button.MOVE_FORWARD, Button.MOVE_BACKWARD],
+    [Button.SELECT_NEXT_WEAPON, Button.SELECT_PREV_WEAPON],
 ]
 
 # Buttons that can only be used alone.
