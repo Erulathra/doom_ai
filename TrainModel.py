@@ -10,11 +10,12 @@ from TrainAndLoggingCallback import TrainAndLoggingCallback
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.env_util import make_vec_env
 
+from VizDoomBotsEnv import VizDoomBotsEnv
 from VizDoomEnv import VizDoomEnv
 
-from ROERewardShaping import ROERewardShaping, SimpleRewardShaping, EVENTS_TYPES_NUMBER
+from ROERewardShaping import ROERewardShaping, SimpleRewardShaping, EVENTS_TYPES_NUMBER, BotsAdditionalRewardShaping
 
-scenario = "deathmatch"
+scenario = "bots_deathmatch"
 frame_skip = 4
 memory_size = 1
 advanced_actions = True
@@ -27,6 +28,8 @@ else:
     advanced_actions_str = 'basic_action_space'
 
 LOG_DIR = os.path.join(os.path.curdir, "logs", "debug", scenario, f"mem_{memory_size}", f"{advanced_actions_str}")
+
+static_additional_reward = 0.
 
 
 def main():
@@ -44,7 +47,8 @@ def main():
             'reward_shaping_class': ROERewardShaping,
             'reward_shaping_kwargs': {
                 'event_buffer_class': EventBuffer,
-                'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER}
+                'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER},
+                'additional_reward_shaping_class': BotsAdditionalRewardShaping
             }
         },
 

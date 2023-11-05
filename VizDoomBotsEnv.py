@@ -13,11 +13,14 @@ class VizDoomBotsEnv(VizDoomEnv):
             resolution=(160, 120),
             is_window_visible=False,
             doom_skill=-1,
-            reward_shaping=None,
+            reward_shaping_class=None,
+            reward_shaping_kwargs={},
             memory_size=1,
+            advanced_actions=True,
+            game_args='',
             n_bots=3):
 
-        game_args = '-host 1 -deathmatch +viz_nocheat 0 +cl_run 1 +name AGENT +colorset 0' + \
+        game_args += '-host 1 -deathmatch +viz_nocheat 0 +cl_run 1 +name AGENT +colorset 0' + \
                          '+sv_forcerespawn 1 +sv_respawnprotect 1 +sv_nocrouch 1 +sv_noexit 1'
         self.n_bots = n_bots
 
@@ -27,9 +30,12 @@ class VizDoomBotsEnv(VizDoomEnv):
             resolution,
             is_window_visible,
             doom_skill,
-            reward_shaping,
+            reward_shaping_class,
+            reward_shaping_kwargs,
             memory_size,
-            game_args=game_args)
+            advanced_actions,
+            game_args
+        )
 
     def _setup_game(self):
         super()._setup_game()

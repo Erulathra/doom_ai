@@ -1,22 +1,17 @@
 import os
-import time
 from EventBuffer import EventBuffer
-
 from VizDoomEnv import VizDoomEnv
-from rich import print
 from rich.progress import track
-
 from stable_baselines3 import PPO, A2C
-
 from TrainModel import scenario, memory_size
-
-from ROERewardShaping import ROERewardShaping
-
+from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER
 import imageio
+
+scenario = 'deadly_corridor'
 
 GIF_DIR = os.path.join('./', 'giphy', scenario)
 GIF_PATH = os.path.join(GIF_DIR, f'mem_{memory_size}.gif')
-MODEL_DIR = "model/simple_deathmatch/mem_1/best_model_980000.zip"
+MODEL_DIR = "model/deadly_corridor/mem_1/best_model_2500000.zip"
 
 
 def main():
@@ -31,7 +26,7 @@ def main():
         reward_shaping_class=ROERewardShaping,
         reward_shaping_kwargs={
             'event_buffer_class': EventBuffer,
-            'event_buffer_kwargs': {'n': 7}
+            'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER}
         }
     )
     env.frame_skip = 1

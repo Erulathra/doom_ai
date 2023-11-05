@@ -11,10 +11,12 @@ from stable_baselines3 import PPO, A2C
 
 from TrainModel import scenario, memory_size
 
-from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER
+from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER, BotsAdditionalRewardShaping
+
+scenario = 'deadly_corridor'
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/bots_deathmatch/best_model_10000.zip"
+MODEL_DIR = "model/deadly_corridor/mem_1/best_model_2500000.zip"
 
 def main():
     model = A2C.load(MODEL_DIR)
@@ -29,7 +31,8 @@ def main():
         reward_shaping_class=ROERewardShaping,
         reward_shaping_kwargs={
             'event_buffer_class': EventBuffer,
-            'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER}
+            'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER},
+            'additional_reward_shaping_class': BotsAdditionalRewardShaping
         }
     )
     env.frame_skip = 1
@@ -43,7 +46,7 @@ def main():
         while not terminated:
             action, _ = model.predict(obs)
             obs, reward, terminated, _, info = env.step(action)
-            # time.sleep(1.0 / (60.0 * 2))
+            time.sleep(1.0 / (60.0 * 2))
             total_reward += reward
 
         print(f"{episode}. Total Reward: {total_reward}")

@@ -28,12 +28,20 @@ class VizdoomEvent(Enum):
 
 
 class ROERewardShaping:
-    def __init__(self, event_buffer_class, event_buffer_kwargs) -> None:
+    def __init__(
+            self,
+            event_buffer_class,
+            event_buffer_kwargs,
+            additional_reward_shaping_class=None
+    ) -> None:
         self.event_buffer = event_buffer_class(**event_buffer_kwargs)
 
         self.distance_moved_squared = 0
         self.intrinsic_reward = 0
         self.extrinsic_reward = 0
+
+        self.additional_reward_shaping_class = additional_reward_shaping_class
+        self.additional_reward_shaping = None
 
         self.position_buffer = PositionBuffer()
 
@@ -41,7 +49,14 @@ class ROERewardShaping:
         intrinsic_reward_this_step = self.event_buffer.intrinsic_reward(self.events_this_step)
         self.intrinsic_reward += intrinsic_reward_this_step
         self.extrinsic_reward += reward
-        return reward + intrinsic_reward_this_step
+
+        additional_reward = 0
+
+        if self.additional_reward_shaping is not None:
+            additional_reward = self.additional_reward_shaping.get_reward(self.current_vars)
+            self.extrinsic_reward += additional_reward
+
+        return reward + intrinsic_reward_this_step + additional_reward
 
     def step(self, doom_game: vzd.DoomGame):
         self.events_this_step = self._get_events(doom_game)
@@ -58,6 +73,9 @@ class ROERewardShaping:
         self.events_this_episode = np.zeros(EVENTS_TYPES_NUMBER)
         self.extrinsic_reward = 0
         self.intrinsic_reward = 0
+
+        if self.additional_reward_shaping_class is not None:
+            self.additional_reward_shaping = self.additional_reward_shaping_class()
 
         return
 
@@ -165,7 +183,7 @@ class ROERewardShaping:
             VizdoomEvent.PICKUP_ARMOUR,
             VizdoomEvent.PICKUP_AMMO,
             VizdoomEvent.DAMAGE_MONSTER,
-            # VizdoomEvent.KILL_MONSTER,
+            # VizdoomEvent.KILL_MONSTER, # Calculated later using weapon events
             VizdoomEvent.SHOOTING,
         ]
 
@@ -179,7 +197,6 @@ class ROERewardShaping:
             kill_count += self.events_this_episode[enum_id]
 
         result["KILL_MONSTER"] = kill_count
-
 
         return result
 
@@ -203,3 +220,27 @@ class SimpleRewardShaping(ROERewardShaping):
         self.intrinsic_reward = 0
         self.extrinsic_reward += reward
         return reward
+
+
+class BotsAdditionalRewardShaping:
+    def __init__(self):
+        self.last_death_count = 0
+        self.last_kill_count = 0
+        pass
+
+    def get_reward(self, game_vars):
+        kill_count = game_vars[14]
+        death_count = game_vars[15]
+
+        additional_reward = 0.
+
+        if kill_count > self.last_kill_count:
+            additional_reward += 1.
+
+        if death_count > self.last_death_count:
+            additional_reward -= 1.
+
+        self.last_kill_count = kill_count
+        self.last_death_count = death_count
+
+        return additional_reward
