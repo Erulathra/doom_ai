@@ -7,11 +7,11 @@ from TrainModel import scenario, memory_size
 from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER
 import imageio
 
-scenario = 'deadly_corridor'
+scenario = 'deathmatch_multiple_buttons'
 
 GIF_DIR = os.path.join('./', 'giphy', scenario)
-GIF_PATH = os.path.join(GIF_DIR, f'mem_{memory_size}.gif')
-MODEL_DIR = "model/deadly_corridor/mem_1/best_model_2500000.zip"
+GIF_PATH = os.path.join(GIF_DIR, f'ROE_16_mem_{memory_size}_3.gif')
+MODEL_DIR = "model/deathmatch_multiple_buttons/mem_1/16_best_model_530000.zip"
 
 
 def main():
@@ -20,8 +20,9 @@ def main():
     env = VizDoomEnv(
         scenario,
         is_window_visible=False,
-        doom_skill=2,
-        memory_size=memory_size,
+        doom_skill=1,
+        memory_size=1,
+        advanced_actions=True,
 
         reward_shaping_class=ROERewardShaping,
         reward_shaping_kwargs={
@@ -34,7 +35,7 @@ def main():
     runs = []
     rewards = []
 
-    for _ in track(range(50)):
+    for _ in track(range(1)):
         images = []
 
         obs, _ = env.reset()
@@ -51,7 +52,7 @@ def main():
 
             obs, reward, terminated, _, info = env.step(action)
 
-            if not terminated and i % 3 == 0:
+            if not terminated and i % 2 == 0:
                 images.append(env.game.get_state().screen_buffer)
 
             reward_sum += reward

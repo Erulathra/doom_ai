@@ -9,11 +9,19 @@ MUTUALLY_EXCLUSIVE_GROUPS = [
     [Button.MOVE_RIGHT, Button.MOVE_LEFT],
     [Button.TURN_RIGHT, Button.TURN_LEFT],
     [Button.MOVE_FORWARD, Button.MOVE_BACKWARD],
-    [Button.SELECT_NEXT_WEAPON, Button.SELECT_PREV_WEAPON],
 ]
 
 # Buttons that can only be used alone.
-EXCLUSIVE_BUTTONS = [Button.ATTACK]
+EXCLUSIVE_BUTTONS = [
+    Button.ATTACK,
+
+    Button.SELECT_PREV_WEAPON, Button.SELECT_NEXT_WEAPON,
+
+    Button.SELECT_WEAPON0, Button.SELECT_WEAPON1, Button.SELECT_WEAPON2,
+    Button.SELECT_WEAPON3, Button.SELECT_WEAPON4, Button.SELECT_WEAPON5,
+    Button.SELECT_WEAPON6, Button.SELECT_WEAPON7, Button.SELECT_WEAPON8,
+    Button.SELECT_WEAPON9
+]
 
 
 def has_exclusive_button(actions: np.ndarray, buttons: np.array) -> np.array:

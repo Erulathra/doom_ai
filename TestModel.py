@@ -13,10 +13,10 @@ from TrainModel import scenario, memory_size
 
 from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER, BotsAdditionalRewardShaping
 
-scenario = 'deadly_corridor'
+scenario = 'deathmatch_multiple_buttons'
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/deadly_corridor/mem_1/best_model_2500000.zip"
+MODEL_DIR = "model/deathmatch_multiple_buttons/mem_1/16_best_model_530000.zip"
 
 def main():
     model = A2C.load(MODEL_DIR)
@@ -24,7 +24,7 @@ def main():
     env = VizDoomEnv(
         scenario,
         is_window_visible=True,
-        doom_skill=3,
+        doom_skill=5,
         memory_size=1,
         advanced_actions=True,
 
@@ -33,7 +33,8 @@ def main():
             'event_buffer_class': EventBuffer,
             'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER},
             'additional_reward_shaping_class': BotsAdditionalRewardShaping
-        }
+        },
+        # n_bots=10
     )
     env.frame_skip = 1
 

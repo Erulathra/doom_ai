@@ -1,6 +1,5 @@
 import os.path
 
-import wakepy
 from wakepy import keep
 
 from EventBuffer import EventBuffer
@@ -15,7 +14,7 @@ from VizDoomEnv import VizDoomEnv
 
 from ROERewardShaping import ROERewardShaping, SimpleRewardShaping, EVENTS_TYPES_NUMBER, BotsAdditionalRewardShaping
 
-scenario = "bots_deathmatch"
+scenario = "deathmatch_multiple_buttons"
 frame_skip = 4
 memory_size = 1
 advanced_actions = True
@@ -27,7 +26,7 @@ if advanced_actions:
 else:
     advanced_actions_str = 'basic_action_space'
 
-LOG_DIR = os.path.join(os.path.curdir, "logs", "debug", scenario, f"mem_{memory_size}", f"{advanced_actions_str}")
+LOG_DIR = os.path.join(os.path.curdir, "logs", "article_comp", scenario, f"mem_{memory_size}", f"{advanced_actions_str}", "ROE_PPO")
 
 static_additional_reward = 0.
 
@@ -35,12 +34,12 @@ static_additional_reward = 0.
 def main():
     env = make_vec_env(
         VizDoomEnv,
-        n_envs=4,
+        n_envs=16,
         env_kwargs={
             "scenario": scenario,
             "is_window_visible": False,
             "frame_skip": frame_skip,
-            "doom_skill": 3,
+            "doom_skill": 5,
             "memory_size": memory_size,
             "advanced_actions": advanced_actions,
 
@@ -49,7 +48,8 @@ def main():
                 'event_buffer_class': EventBuffer,
                 'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER},
                 'additional_reward_shaping_class': BotsAdditionalRewardShaping
-            }
+            },
+            # 'n_bots': 10
         },
 
     )
@@ -59,19 +59,31 @@ def main():
     )
 
     # A2C
-    model = A2C(
+    # model = A2C(
+    #     "CnnPolicy",
+    #     env,
+    #     tensorboard_log=LOG_DIR,
+    #     verbose=1,
+    #     learning_rate=7e-4,
+    #     n_steps=32,
+    #     gamma=0.99,
+    #     ent_coef=0.01,
+    #     vf_coef=0.5,
+    #     max_grad_norm=0.5,
+    #     use_rms_prop=True,
+    #     rms_prop_eps=1e-5
+    # )
+
+    model = PPO(
         "CnnPolicy",
         env,
         tensorboard_log=LOG_DIR,
         verbose=1,
         learning_rate=7e-4,
-        n_steps=32,
-        gamma=0.99,
-        ent_coef=0.01,
-        vf_coef=0.5,
-        max_grad_norm=0.5,
-        use_rms_prop=True,
-        rms_prop_eps=1e-5
+        n_steps=1024,
+        gae_lambda=0.95,
+        clip_range=0.1,
+        batch_size=64,
     )
 
     with keep.running() as m:

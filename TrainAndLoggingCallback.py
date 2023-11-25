@@ -27,7 +27,7 @@ class TrainAndLoggingCallback(BaseCallback):
             model_path = os.path.join(self.save_path, f"best_model_{self.n_calls}")
             self.model.save(model_path)
 
-        # Log ROE
+        # Log classic
         statistics = self._get_average_statistics()
 
         for name, value in statistics.items():
