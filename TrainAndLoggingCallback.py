@@ -1,3 +1,4 @@
+import csv
 import os
 from copy import copy
 from typing import Dict
@@ -18,6 +19,8 @@ class TrainAndLoggingCallback(BaseCallback):
         self.check_freq = check_freq
         self.save_path = save_path
 
+        csv_log_path = os.path.join(save_path, 'logs.csv')
+
     def _init_callback(self):
         if self.save_path is not None:
             os.makedirs(self.save_path, exist_ok=True)
@@ -27,7 +30,6 @@ class TrainAndLoggingCallback(BaseCallback):
             model_path = os.path.join(self.save_path, f"best_model_{self.n_calls}")
             self.model.save(model_path)
 
-        # Log classic
         statistics = self._get_average_statistics()
 
         for name, value in statistics.items():
@@ -36,6 +38,9 @@ class TrainAndLoggingCallback(BaseCallback):
         self._log_heatmap()
 
         return True
+
+    def _on_rollout_end(self) -> None:
+        pass
 
     def _log_heatmap(self):
         if self.num_timesteps % 12800 == 0 and self.num_timesteps != 0:

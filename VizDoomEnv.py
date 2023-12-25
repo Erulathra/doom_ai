@@ -52,6 +52,8 @@ class VizDoomEnv(Env):
         self.memory_size = memory_size
         self.memory = []
 
+        self.episode_length = 0
+
         self.game_args = game_args
 
         self._setup_game()
@@ -98,6 +100,7 @@ class VizDoomEnv(Env):
                 reward = self.reward_shaping.get_reward(reward)
 
             self.is_first_step = False
+            self.episode_length = self.game.get_episode_time()
 
         else:
             screen_buffer = np.zeros((self.resolution[1], self.resolution[0]))
@@ -186,10 +189,14 @@ class VizDoomEnv(Env):
         self.game.add_available_game_variable(GameVariable.HEALTH)
 
     def get_statistics(self):
-        if self.reward_shaping is None:
-            return {}
+        result = {}
 
-        return self.reward_shaping.get_statistics()
+        if self.reward_shaping is not None:
+            result = self.reward_shaping.get_statistics()
+
+        result["episode_length"] = self.episode_length
+
+        return result
 
     def get_position_heat_matrix(self, size: tuple[int, int]):
         if self.reward_shaping is None:
