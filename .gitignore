@@ -13,3 +13,4 @@
 
 *.bak
 .mypy_cache
+/plots

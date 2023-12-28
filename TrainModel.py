@@ -12,14 +12,15 @@ from stable_baselines3.common.env_util import make_vec_env
 from VizDoomBotsEnv import VizDoomBotsEnv
 from VizDoomEnv import VizDoomEnv
 
-from ROERewardShaping import ROERewardShaping, SimpleRewardShaping, EVENTS_TYPES_NUMBER, BotsAdditionalRewardShaping
+from ROERewardShaping import ROERewardShaping, SimpleRewardShaping, EVENTS_TYPES_NUMBER, BotsAdditionalRewardShaping, \
+    StaticBufferROERewardShaping
 
 from stable_baselines3.common.logger import configure
 
 scenario = "simple_deathmatch"
 frame_skip = 4
 memory_size = 1
-advanced_actions = True
+advanced_actions = False
 
 
 if advanced_actions:
@@ -33,13 +34,14 @@ static_additional_reward = 0.
 
 
 def main():
-    # scenarios_to_learn = ['health_gathering', 'health_gathering_supreme', 'my_way_home']
+    # scenarios_to_learn = ['health_gathering', 'health_gathering_supreme', 'my_way_home', 'deadly_corridor']
     scenarios_to_learn = ['simple_deathmatch', 'deathmatch']
+    # scenarios_to_learn = ['deathmatch']
 
     for scenario_name in scenarios_to_learn:
     # if True:
     #     scenario_name =
-        PATH = os.path.join("final", 'MEM_TEST', buffer_str,
+        PATH = os.path.join("final", 'Test', buffer_str,
                             f"{advanced_actions_str}", f"mem_{memory_size}",
                             scenario_name)
 
@@ -58,11 +60,11 @@ def main():
                 "scenario": scenario_name,
                 "is_window_visible": False,
                 "frame_skip": frame_skip,
-                "doom_skill": 3,
+                "doom_skill": 5,
                 "memory_size": memory_size,
                 "advanced_actions": advanced_actions,
 
-                'reward_shaping_class': ROERewardShaping,
+                'reward_shaping_class': StaticBufferROERewardShaping,
                 'reward_shaping_kwargs': {
                     'event_buffer_class': EventBuffer,
                     'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER},

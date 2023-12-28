@@ -13,45 +13,49 @@ from TrainModel import scenario, memory_size
 
 from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER, BotsAdditionalRewardShaping
 
-scenario = 'deathmatch_multiple_buttons'
+scenario = 'deadly_corridor'
 
 # MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/deathmatch_multiple_buttons/mem_1/16_best_model_530000.zip"
+MODEL_DIR = "model/final/A2C_ADV/sep_buffer/adv_action/mem_1/deathmatch/best_model_600000.zip"
 
 def main():
     model = A2C.load(MODEL_DIR)
 
     env = VizDoomEnv(
         scenario,
-        is_window_visible=True,
-        doom_skill=5,
+        is_window_visible=False,
+        doom_skill=3,
         memory_size=1,
-        advanced_actions=True,
+        advanced_actions=False,
 
         reward_shaping_class=ROERewardShaping,
         reward_shaping_kwargs={
             'event_buffer_class': EventBuffer,
-            'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER},
-            'additional_reward_shaping_class': BotsAdditionalRewardShaping
-        },
-        # n_bots=10
+            'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER}
+        }
     )
     env.frame_skip = 1
 
-    for episode in track(range(101)):
+    episode_results = []
+
+    for episode in range(100):
         obs, _ = env.reset()
+        action, _ = model.predict(obs)
+
         terminated = False
-        total_reward = 0
 
-        print(f"Episode: {episode}")
+        step = 0
         while not terminated:
-            action, _ = model.predict(obs)
-            obs, reward, terminated, _, info = env.step(action)
-            time.sleep(1.0 / (60.0 * 2))
-            total_reward += reward
+            if step % 4 == 0:
+                action, _ = model.predict(obs)
 
-        print(f"{episode}. Total Reward: {total_reward}")
-        print(env.get_statistics())
+            obs, reward, terminated, _, info = env.step(action)
+
+            step += 1
+            # time.sleep(1 / (30. * 4))
+
+        stats = env.get_statistics()
+        episode_results.append(stats['extrinsic_reward'])
 
     env.close()
 

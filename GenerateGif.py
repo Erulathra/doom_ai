@@ -1,17 +1,18 @@
 import os
+import time
+
 from EventBuffer import EventBuffer
 from VizDoomEnv import VizDoomEnv
 from rich.progress import track
-from stable_baselines3 import PPO, A2C
-from TrainModel import scenario, memory_size
+from stable_baselines3 import A2C
 from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER
 import imageio
 
-scenario = 'deathmatch_multiple_buttons'
+scenario = 'deadly_corridor'
 
 GIF_DIR = os.path.join('./', 'giphy', scenario)
-GIF_PATH = os.path.join(GIF_DIR, f'ROE_16_mem_{memory_size}_3.gif')
-MODEL_DIR = "model/deathmatch_multiple_buttons/mem_1/16_best_model_530000.zip"
+GIF_PATH = os.path.join(GIF_DIR, f'test.gif')
+MODEL_DIR = "model/final/ROE/sep_buffer/basic_action/mem_1/deadly_corridor/best_model_2500000.zip"
 
 
 def main():
@@ -19,10 +20,10 @@ def main():
 
     env = VizDoomEnv(
         scenario,
-        is_window_visible=False,
-        doom_skill=1,
+        is_window_visible=True,
+        doom_skill=3,
         memory_size=1,
-        advanced_actions=True,
+        advanced_actions=False,
 
         reward_shaping_class=ROERewardShaping,
         reward_shaping_kwargs={
@@ -39,9 +40,9 @@ def main():
         images = []
 
         obs, _ = env.reset()
-        terminated = False
-
         action, _ = model.predict(obs)
+
+        terminated = False
 
         reward_sum = 0
 
@@ -57,6 +58,7 @@ def main():
 
             reward_sum += reward
             i += 1
+            time.sleep(1 / (30. * 4))
 
         runs.append(images)
         rewards.append(reward_sum)

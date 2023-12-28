@@ -222,6 +222,22 @@ class SimpleRewardShaping(ROERewardShaping):
         return reward
 
 
+class StaticBufferROERewardShaping(ROERewardShaping):
+    static_buffer = None
+
+    def __init__(
+            self,
+            event_buffer_class,
+            event_buffer_kwargs,
+            additional_reward_shaping_class=None
+    ):
+        ROERewardShaping.__init__(self, event_buffer_class, event_buffer_kwargs, additional_reward_shaping_class)
+        if StaticBufferROERewardShaping.static_buffer is None:
+            StaticBufferROERewardShaping.static_buffer = self.event_buffer
+        else:
+            self.event_buffer = StaticBufferROERewardShaping.static_buffer
+
+
 class BotsAdditionalRewardShaping:
     def __init__(self):
         self.last_death_count = 0
