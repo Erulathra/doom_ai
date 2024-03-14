@@ -6,7 +6,6 @@ import numpy as np
 
 from sympy.physics.control.control_plots import matplotlib
 
-
 SMOOTHING_VALUE = 0.95
 
 
@@ -35,8 +34,6 @@ def smooth(scalars: list[float], weight: float) -> list[float]:
     return smoothed
 
 
-
-
 def generate_compare_plots(data_dirs, data_name, data_human_readable_name):
     scenarios = os.listdir(data_dirs[0])
     for scenario in scenarios:
@@ -55,17 +52,17 @@ def generate_compare_plots(data_dirs, data_name, data_human_readable_name):
         generate_compare_plot(datas, data_name, data_human_readable_name, output_path)
 
 
-def show_one_value_plot(data, save_path=None):
+def show_one_value_plot(data, data_name, data_human_readable_name, save_path=None):
     x_points = data["timetotal_timesteps"]
 
-    y_points_raw = data["rolloutep_len_mean"].tolist()
-    y_points_smooth = smooth(data["rolloutep_len_mean"].tolist(), SMOOTHING_VALUE)
+    y_points_raw = data[data_name].tolist()
+    y_points_smooth = smooth(data[data_name].tolist(), SMOOTHING_VALUE)
 
     plt.plot(x_points, y_points_raw, color='#FF000022')
     plt.plot(x_points, y_points_smooth, color='#FF0000FF')
 
-    plt.xlabel("liczba kroków nauki")
-    plt.ylabel("Długość scenariusza")
+    plt.xlabel(data_human_readable_name)
+    plt.ylabel("długość scenariusza")
 
     if save_path is None:
         plt.show()
@@ -73,6 +70,7 @@ def show_one_value_plot(data, save_path=None):
         plt.savefig(save_path)
 
     plt.close()
+
 
 def generate_compare_plot(datas, data_name, data_human_readable_name, save_path=None):
     colors = ['#0000FF', '#FF0000', '#00FF00']
@@ -93,7 +91,7 @@ def generate_compare_plot(datas, data_name, data_human_readable_name, save_path=
     if save_path is None:
         plt.show()
     else:
-        plt.savefig(save_path)
+        plt.savefig(save_path, )
 
     plt.close()
 
@@ -133,12 +131,15 @@ def show_roe_plot(data):
 
     plt.show()
 
+matplotlib.rcParams.update({'font.size': 16})
+matplotlib.rcParams.update({"figure.figsize":(6, 4)})
+matplotlib.rcParams.update({"savefig.bbox":'tight'})
 
 FILE_ONE = 'logs/final/baseline/sep_buffer/adv_action/mem_1/health_gathering/progress.csv'
 DIR_ONE = 'logs/final/baseline/sep_buffer/basic_action/mem_1'
 DIR_TWO = 'logs/final/ROE/sep_buffer/basic_action/mem_1'
 
-OUT = 'plots/baselines_vs_roe'
+OUT = 'plots/baseline_vs_roe'
 matplotlib.use('qtAgg')
 
 # ROE vs Baselines
@@ -147,9 +148,14 @@ generate_compare_plots([DIR_ONE, DIR_TWO], "emoextrinsic_reward", "zewnętrzna n
 
 generate_compare_plots([DIR_ONE, DIR_TWO], "emoPICKUP_AMMO", "podniesienie amunicji")
 generate_compare_plots([DIR_ONE, DIR_TWO], "emoPICKUP_HEALTH", "podniesienie apteczki")
+data = read_csf_to_dict('logs/final/ROE/sep_buffer/basic_action/mem_1/my_way_home/progress.csv')
+os.makedirs(os.path.join(OUT, 'my_way_home'))
+show_one_value_plot(data, 'emoMOVEMENT', 'zdarzenia poruszania się', os.path.join(OUT, 'my_way_home', 'roe_movement.png'))
+show_one_value_plot(data, 'emointrinsic_reward', 'nagroda wewnętrzna', os.path.join(OUT, 'my_way_home', 'roe_intristic.png'))
 
 # A2C vs PPO
 DIR_ONE = 'logs/final/PPO/sep_buffer/basic_action/mem_1'
+DIR_TWO = 'logs/final/ROE/sep_buffer/basic_action/mem_1'
 OUT = 'plots/a2c_vs_ppo'
 generate_compare_plots([DIR_ONE, DIR_TWO], "emoepisode_length", "długość epizodu")
 generate_compare_plots([DIR_ONE, DIR_TWO], "emoextrinsic_reward", "zewnętrzna nagroda")
@@ -172,3 +178,4 @@ DIR_TWO = 'logs/final/MEM_TEST/sep_buffer/adv_action/mem_5'
 DIR_THREE = 'logs/final/MEM_TEST/sep_buffer/adv_action/mem_10'
 OUT = 'plots/mem'
 generate_compare_plots([DIR_ONE, DIR_TWO, DIR_THREE], "emoextrinsic_reward", "zewnętrzna nagroda")
+generate_compare_plots([DIR_ONE, DIR_TWO, DIR_THREE], "emoepisode_length", "długość epizodu")

@@ -35,18 +35,17 @@ static_additional_reward = 0.
 
 def main():
     # scenarios_to_learn = ['health_gathering', 'health_gathering_supreme', 'my_way_home', 'deadly_corridor']
-    scenarios_to_learn = ['simple_deathmatch', 'deathmatch']
-    # scenarios_to_learn = ['deathmatch']
+    # scenarios_to_learn = ['simple_deathmatch', 'deathmatch']
+    scenarios_to_learn = ['simple_deathmatch']
 
     for scenario_name in scenarios_to_learn:
     # if True:
     #     scenario_name =
-        PATH = os.path.join("final", 'Test', buffer_str,
+        PATH = os.path.join("final", 'baseline', buffer_str,
                             f"{advanced_actions_str}", f"mem_{memory_size}",
                             scenario_name)
 
         LOG_DIR = os.path.join(os.path.curdir, 'logs', PATH)
-
         CHECKPOINT_DIR = os.path.join(os.path.curdir, "model", PATH)
 
         n_envs = 4
@@ -60,11 +59,11 @@ def main():
                 "scenario": scenario_name,
                 "is_window_visible": False,
                 "frame_skip": frame_skip,
-                "doom_skill": 5,
+                "doom_skill": 4,
                 "memory_size": memory_size,
                 "advanced_actions": advanced_actions,
 
-                'reward_shaping_class': StaticBufferROERewardShaping,
+                'reward_shaping_class': SimpleRewardShaping,
                 'reward_shaping_kwargs': {
                     'event_buffer_class': EventBuffer,
                     'event_buffer_kwargs': {'n': EVENTS_TYPES_NUMBER},

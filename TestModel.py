@@ -13,20 +13,19 @@ from TrainModel import scenario, memory_size
 
 from ROERewardShaping import ROERewardShaping, EVENTS_TYPES_NUMBER, BotsAdditionalRewardShaping
 
-scenario = 'deadly_corridor'
-
-# MODEL_DIR = os.path.join('model', scenario, 'best_model_' + str(total_timesteps) + '.zip')
-MODEL_DIR = "model/final/A2C_ADV/sep_buffer/adv_action/mem_1/deathmatch/best_model_600000.zip"
+scenario = 'deathmatch'
+# MODEL_DIR = "model/final/A2C_ADV/sep_buffer/adv_action/mem_1/deathmatch/best_model_600000.zip"
+MODEL_DIR = "model/final/MEM_TEST/sep_buffer/adv_action/mem_10/deathmatch/best_model_600000.zip"
 
 def main():
     model = A2C.load(MODEL_DIR)
 
     env = VizDoomEnv(
         scenario,
-        is_window_visible=False,
+        is_window_visible=True,
         doom_skill=3,
-        memory_size=1,
-        advanced_actions=False,
+        memory_size=10,
+        advanced_actions=True,
 
         reward_shaping_class=ROERewardShaping,
         reward_shaping_kwargs={
@@ -52,10 +51,7 @@ def main():
             obs, reward, terminated, _, info = env.step(action)
 
             step += 1
-            # time.sleep(1 / (30. * 4))
-
-        stats = env.get_statistics()
-        episode_results.append(stats['extrinsic_reward'])
+            time.sleep(1 / (30. * 2))
 
     env.close()
 

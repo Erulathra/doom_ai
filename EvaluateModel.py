@@ -16,7 +16,7 @@ baseline_models = {
     'my_way_home': 'model/final/baseline/sep_buffer/basic_action/mem_1/my_way_home/best_model_2500000.zip',
     'deadly_corridor': 'model/final/baseline/sep_buffer/basic_action/mem_1/deadly_corridor/best_model_2500000.zip',
     'simple_deathmatch': 'model/final/baseline/sep_buffer/basic_action/mem_1/simple_deathmatch/best_model_2300000.zip',
-    'deathmatch': None
+    'deathmatch': 'model/final/baseline/sep_buffer/basic_action/mem_1/deathmatch/best_model_600000.zip'
 }
 
 roe_models = {
@@ -34,7 +34,7 @@ scenarios = [
     ('my_way_home', 'My way home'),
     ('deadly_corridor', 'Deadly corridor'),
     ('simple_deathmatch', 'Simple deathmatch'),
-    # ('deathmatch', 'Deathmatch'),
+    ('deathmatch', 'Deathmatch'),
 ]
 
 
@@ -69,10 +69,10 @@ def main():
                 )
                 env.frame_skip = 1
 
-                sub_task = progress.add_task(f'[blue]{scenario}...', total=100)
+                sub_task = progress.add_task(f'[blue]{scenario}...', total=10)
                 episode_results = []
 
-                for episode in range(100):
+                for episode in range(10):
                     progress.update(sub_task, advance=1)
                     progress.refresh()
 
@@ -108,8 +108,8 @@ def main():
     print('\t\tscenario & VizDoom & ROE \\\\')
     print('\t\t\\hline\\hline')
     for scenario, scenario_name in scenarios:
-        print(f'\t\t{scenario_name} & ${results[0][scenario][0]:.2g} \\pm {results[0][scenario][1]:.2g}$ &'
-              f' ${results[1][scenario][0]:.2g} \\pm {results[1][scenario][1]:.2g}$ \\\\')
+        print(f'\t\t{scenario_name} & ${results[0][scenario][0]:.3g} \\pm {results[0][scenario][1]:.3g}$ &'
+              f' ${results[1][scenario][0]:.3g} \\pm {results[1][scenario][1]:.3g}$ \\\\')
         print('\t\t\\hline')
 
     print('\t\\end{tabular}')

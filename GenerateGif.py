@@ -12,7 +12,7 @@ scenario = 'deadly_corridor'
 
 GIF_DIR = os.path.join('./', 'giphy', scenario)
 GIF_PATH = os.path.join(GIF_DIR, f'test.gif')
-MODEL_DIR = "model/final/ROE/sep_buffer/basic_action/mem_1/deadly_corridor/best_model_2500000.zip"
+MODEL_DIR = "model/final/MEM_TEST/sep_buffer/adv_action/mem_10/simple_deathmatch/best_model_2500000.zip"
 
 
 def main():
